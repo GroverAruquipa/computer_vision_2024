@@ -45,6 +45,7 @@ import matplotlib.pyplot as plt
 # Initialize global materials list
 materials = []
 
+
 class ObjectDetector:
     def __init__(self):
         self.ratio_width = 1
@@ -52,7 +53,6 @@ class ObjectDetector:
         self.register_material()  # Register materials during initialization
 
     def process_frame(self, diff, frame):
-
         # Convert frame to grayscale
         gray = cv2.cvtColor(diff, cv2.COLOR_BGR2GRAY)
         # Apply Gaussian blur
@@ -65,7 +65,7 @@ class ObjectDetector:
         # plt.subplot(122)
         # plt.imshow(thresh)
         # plt.show()
-        
+
         # Find contours
         contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
@@ -84,15 +84,15 @@ class ObjectDetector:
                 width_mm = width * self.ratio_width
                 length_mm = height * self.ratio_length
 
-                 # Make sure to swap width and length if needed
+                # Make sure to swap width and length if needed
                 bb_width = min(width_mm, length_mm)
                 bb_length = max(width_mm, length_mm)
 
                 # Find the object
                 matched_material = None
                 for mat in materials:
-                    if mat.compare_dimension(bb_width = bb_width, bb_length =bb_length):
-                        if self.compare_images(frame,box_points,mat):
+                    if mat.compare_dimension(bb_width=bb_width, bb_length=bb_length):
+                        if self.compare_images(frame, box_points, mat):
                             matched_material = mat
                             break
 
@@ -105,27 +105,23 @@ class ObjectDetector:
                     label_lines = [
                         f"Nom: {matched_material.name}",
                         f"Largeur: {bb_width:.2f} mm",
-                        f"Longueur: {bb_length:.2f} mm"
+                        f"Longueur: {bb_length:.2f} mm",
                     ]
                 else:
-                    label_lines = [
-                        "Inconnue",
-                        f"Largeur: {bb_width:.2f} mm",
-                        f"Longueur: {bb_length:.2f} mm"
-                    ]
+                    label_lines = ["Inconnue", f"Largeur: {bb_width:.2f} mm", f"Longueur: {bb_length:.2f} mm"]
 
                 # Position for the first line of the label
-                label_x = int(center[0]+(height/2)+10)
-                label_y = int(center[1]-(width/2)) # Slightly above the center
+                label_x = int(center[0] + (height / 2) + 10)
+                label_y = int(center[1] - (width / 2))  # Slightly above the center
 
                 # Add each line of the label to the frame
                 for i, line in enumerate(label_lines):
                     cv2.putText(frame, line, (label_x, label_y + i * 15), cv2.FONT_HERSHEY_SIMPLEX, 0.35, color, 1)
-                
-                #print(f'Bounding Box: center={center}, width={width_mm}, height={length_mm}, angle={angle}')
+
+                # print(f'Bounding Box: center={center}, width={width_mm}, height={length_mm}, angle={angle}')
 
         return frame
-    
+
     def load_templates(self, folder_location):
         templates = []
         for filename in os.listdir(folder_location):
@@ -145,7 +141,7 @@ class ObjectDetector:
             # Get the template size
             template_height = template.shape[0]
             template_width = template.shape[1]
-            
+
             # Calculate the required padding
             pad_height = max(0, template_height - h)
             pad_width = max(0, template_width - w)
@@ -171,10 +167,9 @@ class ObjectDetector:
             # plt.imshow(template)
             # plt.show()
 
-
             # Template matching
             res = cv2.matchTemplate(roi_resized, template, cv2.TM_CCORR)
-            
+
             # Define a more strict threshold
             threshold = 1
             loc = np.where(res >= threshold)
@@ -182,22 +177,18 @@ class ObjectDetector:
             if loc[0].size > 0:
                 return True
 
-
         return False
 
-
-    
     def register_material(self):
-        bolt = Material(name="Boulon M10 x 60", width=18.1, length=66.5,folder_location="img_boulon")
-        ecrou = Material(name="Ecrou M5", width=11,length=11,folder_location="img_ecrou")
-        vis = Material(name="Vis M6 x 38",width=12.5,length=38,folder_location="img_vis")
-        vis_blanche = Material(name="Vis Blanche M5 x 50",width=10.4,length=54,folder_location="img_vis_blanche")
-        tourillon = Material(name="Tourillons",width=12.5,length=38,folder_location="img_tourillon")
+        bolt = Material(name="Boulon M10 x 60", width=18.1, length=66.5, folder_location="img_boulon")
+        ecrou = Material(name="Ecrou M5", width=11, length=11, folder_location="img_ecrou")
+        vis = Material(name="Vis M6 x 38", width=12.5, length=38, folder_location="img_vis")
+        vis_blanche = Material(name="Vis Blanche M5 x 50", width=10.4, length=54, folder_location="img_vis_blanche")
+        tourillon = Material(name="Tourillons", width=12.5, length=38, folder_location="img_tourillon")
         materials.append(bolt)
         materials.append(ecrou)
         materials.append(vis)
         materials.append(vis_blanche)
-
 
     def calibration(self):
         length_calibration_mm = 136.5
@@ -210,7 +201,7 @@ class ObjectDetector:
 
 
 def main():
-    #print(cv2.__version__)
+    # print(cv2.__version__)
     # Initialize Kinect
     kinect = PyKinectRuntime(PyKinectV2.FrameSourceTypes_Color)
     time.sleep(3)  # Enough time to let the Kinect power on
@@ -221,8 +212,8 @@ def main():
     # background = cv2.cvtColor(background, cv2.COLOR_BGRA2BGR)
     background = cv2.imread("background.jpg")
 
-    #plt.imshow(background)
-    #plt.show()
+    # plt.imshow(background)
+    # plt.show()
 
     detector = ObjectDetector()
     detector.calibration()  # Perform calibration
@@ -247,12 +238,11 @@ def main():
                 # plt.imshow(diff_frame)
                 # plt.show()
 
-
                 # Process the frame to detect objects
                 processed_frame = detector.process_frame(diff_frame, frame)
 
                 # Display the frame with bounding boxes
-                cv2.imshow('Kinect Video with Object Detection', processed_frame)
+                cv2.imshow("Kinect Video with Object Detection", processed_frame)
 
                 # Exit on pressing 'ESC'
                 if cv2.waitKey(1) == 27:
