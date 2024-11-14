@@ -192,11 +192,10 @@ class ObjectDetector:
 
     
     def register_material(self):
-        bolt = Material(name="Boulon M10 x 60", width=18.1, length=66.5,folder_location="img_boulon")
-        ecrou = Material(name="Ecrou M5", width=11,length=11,folder_location="img_ecrou")
-        vis = Material(name="Vis M6 x 38",width=12.5,length=38,folder_location="img_vis")
-        vis_blanche = Material(name="Vis Blanche M5 x 50",width=10.4,length=54,folder_location="img_vis_blanche")
-        tourillon = Material(name="Tourillons",width=12.5,length=38,folder_location="img_tourillon")
+        bolt = Material(name="Boulon M10 x 60", width=18.1, length=66.5,folder_location="assets/img_boulon")
+        ecrou = Material(name="Ecrou M5", width=11,length=11,folder_location="assets/img_ecrou")
+        vis = Material(name="Vis M6 x 38",width=12.5,length=38,folder_location="assets/img_vis")
+        vis_blanche = Material(name="Vis Blanche M5 x 50",width=10.4,length=54,folder_location="assets/img_vis_blanche")
         materials.append(bolt)
         materials.append(ecrou)
         materials.append(vis)
@@ -223,7 +222,7 @@ def main():
     # background = kinect.get_last_color_frame()
     # background = background.reshape((1080, 1920, 4))
     # background = cv2.cvtColor(background, cv2.COLOR_BGRA2BGR)
-    background = cv2.imread("background.jpg")
+    background = cv2.imread("assets/background.jpg")
     background = cv2.cvtColor(background, cv2.COLOR_BGR2RGB)
 
     # plt.imshow(background)

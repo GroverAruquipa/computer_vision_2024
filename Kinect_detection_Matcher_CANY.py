@@ -178,12 +178,14 @@ class ObjectDetector:
 
     
     def register_material(self):
-        bolt = Material(name="Boulon M10 x 60", width=18.1, length=66.5,folder_location="img_boulon")
-        ecrou = Material(name="Ecrou M5", width=11,length=11,folder_location="img_ecrou")
-        vis = Material(name="Vis M6 x 38",width=12.5,length=38,folder_location="img_vis")
+        bolt = Material(name="Boulon M10 x 60", width=18.1, length=66.5,folder_location="assets/img_boulon")
+        ecrou = Material(name="Ecrou M5", width=11,length=11,folder_location="assets/img_ecrou")
+        vis = Material(name="Vis M6 x 38",width=12.5,length=38,folder_location="assets/img_vis")
+        vis_blanche = Material(name="Vis Blanche M5 x 50",width=10.4,length=54,folder_location="assets/img_vis_blanche")
         materials.append(bolt)
         materials.append(ecrou)
         materials.append(vis)
+        materials.append(vis_blanche)
 
     def calibration(self):
         length_calibration_mm = 136.5
