@@ -21,7 +21,7 @@ run = st.checkbox("Démarrer la vidéo")
 
 # Placeholder for the video frame
 frame_placeholder = st.empty()
-stop_button_pressed = st.button("Stop")  # button to stop the stream
+stop_button_pressed = st.button("Stop") # button to stop the stream
 
 # Initialize Kinect
 kinect = PyKinectRuntime(PyKinectV2.FrameSourceTypes_Color)
@@ -36,17 +36,17 @@ while True and run and not stop_button_pressed:
         frame = kinect.get_last_color_frame()
 
     if frame is not None:
-        frame = frame.reshape((1080, 1920, 4))  # reshape
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGRA2BGR)  # convert to openCV format
+        frame = frame.reshape((1080, 1920, 4)) # reshape
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGRA2BGR) # convert to openCV format
 
         # Template matching with background contour
-        if algo == "Diff+template":
+        if algo=="Diff+template":
             # get background
             # background = cv2.imread("background.jpg")
 
             # Initialize ObjectDetector
             detector = Kinect_detection_Matcher_DIFF_SameSize.ObjectDetector()
-            detector.calibration()  # Perform calibration
+            detector.calibration() # Perform calibration
 
             # remove background
             diff_frame = cv2.absdiff(background, frame)
@@ -55,13 +55,13 @@ while True and run and not stop_button_pressed:
             processed_frame = detector.process_frame(diff_frame, frame)
 
         # Feature matching with background contour
-        elif algo == "Diff+feature":
+        elif algo=='Diff+feature':
             # get background
             # background = cv2.imread("background.jpg")
 
             # Initialize ObjectDetector
             detector = Kinect_detection_BF_DIFF_SameSize.ObjectDetector()
-            detector.calibration()  # Perform calibration
+            detector.calibration() # Perform calibration
 
             # remove background
             diff_frame = cv2.absdiff(background, frame)
@@ -70,7 +70,7 @@ while True and run and not stop_button_pressed:
             processed_frame = detector.process_frame(diff_frame, frame)
 
         # Template matching with Canny contour
-        elif algo == "Canny+template":
+        elif algo=='Canny+template':
             # get background
             # background = kinect.get_last_color_frame()
             # background = background.reshape((1080, 1920, 4))
@@ -78,7 +78,7 @@ while True and run and not stop_button_pressed:
 
             # Initialize ObjectDetector
             detector = Kinect_detection_Matcher_CANY.ObjectDetector()
-            detector.calibration()  # Perform calibration
+            detector.calibration() # Perform calibration
 
             # remove background
             # diff_frame = cv2.absdiff(background, frame)
@@ -87,7 +87,7 @@ while True and run and not stop_button_pressed:
             processed_frame = detector.process_frame(frame)
 
         # Feature matching with Canny contour
-        elif algo == "Canny+feature":
+        elif algo=='Canny+feature':
             # get background
             # background = kinect.get_last_color_frame()
             # background = background.reshape((1080, 1920, 4))
@@ -95,7 +95,7 @@ while True and run and not stop_button_pressed:
 
             # Initialize ObjectDetector
             detector = Kinect_detection_BF_CANY.ObjectDetector()
-            detector.calibration()  # Perform calibration
+            detector.calibration() # Perform calibration
 
             # remove background
             # diff_frame = cv2.absdiff(background, frame)
@@ -103,9 +103,11 @@ while True and run and not stop_button_pressed:
             # Process the frame to detect objects
             processed_frame = detector.process_frame(frame)
 
-        frame = cv2.cvtColor(processed_frame, cv2.COLOR_BGR2RGB)  # Convert to RGB format for Streamlit
-        frame_placeholder.image(frame, channels="RGB")  # Fill empty placeholder with the camera frame using st.image
 
+        frame = cv2.cvtColor(processed_frame, cv2.COLOR_BGR2RGB) # Convert to RGB format for Streamlit
+        frame_placeholder.image(frame,channels="RGB") # Fill empty placeholder with the camera frame using st.image
+    
     # If press «esc» or hit stop button, end stream
     if cv2.waitKey(1) == 27 or stop_button_pressed:
         break
+

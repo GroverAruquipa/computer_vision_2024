@@ -44,7 +44,6 @@ import matplotlib.pyplot as plt
 # Initialize global materials list
 materials = []
 
-
 class ObjectDetector:
     def __init__(self):
         self.ratio_width = 1
@@ -58,7 +57,7 @@ class ObjectDetector:
         blurred = cv2.GaussianBlur(gray, (5, 5), 0)
         # Threshold the image
         _, thresh = cv2.threshold(blurred, 30, 255, cv2.THRESH_BINARY)
-
+        
         # Find contours
         contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
@@ -77,15 +76,15 @@ class ObjectDetector:
                 width_mm = width * self.ratio_width
                 length_mm = height * self.ratio_length
 
-                # Make sure to swap width and length if needed
+                 # Make sure to swap width and length if needed
                 bb_width = min(width_mm, length_mm)
                 bb_length = max(width_mm, length_mm)
 
                 # Find the object
                 matched_material = None
                 for mat in materials:
-                    if mat.compare_dimension(bb_width=bb_width, bb_length=bb_length):
-                        if self.compare_images(frame, box_points, mat):
+                    if mat.compare_dimension(bb_width = bb_width, bb_length =bb_length):
+                        if self.compare_images(frame,box_points,mat):
                             matched_material = mat
                             break
 
@@ -98,23 +97,27 @@ class ObjectDetector:
                     label_lines = [
                         f"Nom: {matched_material.name}",
                         f"Largeur: {bb_width:.2f} mm",
-                        f"Longueur: {bb_length:.2f} mm",
+                        f"Longueur: {bb_length:.2f} mm"
                     ]
                 else:
-                    label_lines = ["Inconnue", f"Largeur: {bb_width:.2f} mm", f"Longueur: {bb_length:.2f} mm"]
+                    label_lines = [
+                        "Inconnue",
+                        f"Largeur: {bb_width:.2f} mm",
+                        f"Longueur: {bb_length:.2f} mm"
+                    ]
 
                 # Position for the first line of the label
-                label_x = int(center[0] + (height / 2) + 10)
-                label_y = int(center[1] - (width / 2))  # Slightly above the center
+                label_x = int(center[0]+(height/2)+10)
+                label_y = int(center[1]-(width/2)) # Slightly above the center
 
                 # Add each line of the label to the frame
                 for i, line in enumerate(label_lines):
                     cv2.putText(frame, line, (label_x, label_y + i * 15), cv2.FONT_HERSHEY_SIMPLEX, 0.35, color, 1)
-
-                # print(f'Bounding Box: center={center}, width={width_mm}, height={length_mm}, angle={angle}')
+                
+                #print(f'Bounding Box: center={center}, width={width_mm}, height={length_mm}, angle={angle}')
 
         return frame
-
+    
     def load_templates(self, folder_location):
         templates = []
         for filename in os.listdir(folder_location):
@@ -131,14 +134,14 @@ class ObjectDetector:
         x, y, w, h = cv2.boundingRect(box_points)
 
         # Convert the frame to grayscale for consistent processing
-        # frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        #frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         orb = cv2.ORB.create()
 
         for template_name, template in templates:
             # Get the template size
             template_height = template.shape[0]
             template_width = template.shape[1]
-
+            
             # Calculate the required padding
             pad_height = max(0, template_height - h)
             pad_width = max(0, template_width - w)
@@ -158,45 +161,48 @@ class ObjectDetector:
             else:
                 roi_resized = roi
 
-                # print(template_name)
+                        # print(template_name)
             # plt.subplot(121)
             # plt.imshow(roi)
             # plt.subplot(122)
             # plt.imshow(template)
             # plt.show()
 
-            _, des1 = orb.detectAndCompute(template, None)
-            _, des2 = orb.detectAndCompute(roi_resized, None)
+            _,des1 = orb.detectAndCompute(template,None)
+            _,des2 = orb.detectAndCompute(roi_resized,None)
 
             if des1 is None or des2 is None:
                 continue
 
-            bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
-            matches = bf.match(des1, des2)
-            matches = sorted(matches, key=lambda x: x.distance)
+            bf = cv2.BFMatcher(cv2.NORM_HAMMING,crossCheck=True)
+            matches = bf.match(des1,des2)
+            matches = sorted(matches,key=lambda x:x.distance)
+
 
             if len(matches) > 0:
-                # Compare the distance of the best match against a threshold
+            # Compare the distance of the best match against a threshold
                 best_match_distance = matches[0].distance
                 threshold = 50  # A lower value indicate a good match
-                # print(best_match_distance)
+                #print(best_match_distance)
                 if best_match_distance <= threshold:
-                    # print(f"Match found for: {template_name} with distance: {best_match_distance}")
+                    #print(f"Match found for: {template_name} with distance: {best_match_distance}")
                     return True
 
         return False
 
+
+    
     def register_material(self):
-        bolt = Material(name="Boulon M10 x 60", width=18.1, length=66.5, folder_location="img_boulon")
-        ecrou = Material(name="Ecrou M5", width=11, length=11, folder_location="img_ecrou")
-        vis = Material(name="Vis M6 x 38", width=12.5, length=38, folder_location="img_vis")
-        vis_blanche = Material(name="Vis Blanche M5 x 50", width=10.4, length=54, folder_location="img_vis_blanche")
-        tourillon = Material(name="Tourillons", width=12.5, length=38, folder_location="img_tourillon")
+        bolt = Material(name="Boulon M10 x 60", width=18.1, length=66.5,folder_location="img_boulon")
+        ecrou = Material(name="Ecrou M5", width=11,length=11,folder_location="img_ecrou")
+        vis = Material(name="Vis M6 x 38",width=12.5,length=38,folder_location="img_vis")
+        vis_blanche = Material(name="Vis Blanche M5 x 50",width=10.4,length=54,folder_location="img_vis_blanche")
+        tourillon = Material(name="Tourillons",width=12.5,length=38,folder_location="img_tourillon")
         materials.append(bolt)
         materials.append(ecrou)
         materials.append(vis)
         materials.append(vis_blanche)
-        # materials.append(tourillon)
+        #materials.append(tourillon)
 
     def calibration(self):
         length_calibration_mm = 136.5
@@ -209,7 +215,7 @@ class ObjectDetector:
 
 
 def main():
-    # print(cv2.__version__)
+    #print(cv2.__version__)
     # Initialize Kinect
     kinect = PyKinectRuntime(PyKinectV2.FrameSourceTypes_Color)
     time.sleep(5)  # Enough time to let the Kinect power on
@@ -219,7 +225,7 @@ def main():
     # background = background.reshape((1080, 1920, 4))
     # background = cv2.cvtColor(background, cv2.COLOR_BGRA2BGR)
     background = cv2.imread("background.jpg")
-    # print(background.shape[0])
+    #print(background.shape[0])
 
     detector = ObjectDetector()
     detector.calibration()  # Perform calibration
@@ -240,7 +246,7 @@ def main():
                 processed_frame = detector.process_frame(diff_frame, frame)
 
                 # Display the frame with bounding boxes
-                cv2.imshow("Kinect Video with Object Detection", processed_frame)
+                cv2.imshow('Kinect Video with Object Detection', processed_frame)
 
                 # Exit on pressing 'ESC'
                 if cv2.waitKey(1) == 27:
