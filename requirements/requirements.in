@@ -1,2 +1,12 @@
 pip-tools
+pydantic
 rich
+typer
+opencv-python
+opencv-contrib-python
+numpy
+pykinect2
+matplotlib
+pyyaml
+dacite
+streamlit
