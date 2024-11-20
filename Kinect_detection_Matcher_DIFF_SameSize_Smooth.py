@@ -71,7 +71,7 @@ class Matched_Material:
     def compare_center(self,new_center):
         center = self.get_center()
 
-        # Calculate the allowed range for both x and y based on 5%
+        # Calculate the allowed range for both x and y based on 10%
         x_range = center[0] * 0.1
         y_range = center[1] * 0.1
 
@@ -291,7 +291,7 @@ class ObjectDetector:
     def process_frame(self, diff, frame):
         contours = self.get_contours(diff)
         matches = self.find_match(contours,frame)
-        #Average the last 5 frame
+        #Average the last x seconds
         print("**************************")
         new_matches = self.average_materials.add_material(matches)
         self.average_materials.get_materials()
@@ -353,10 +353,10 @@ class ObjectDetector:
 
     
     def register_material(self):
-        bolt = Material(name="Boulon M10 x 60", width=18.1, length=66.5,folder_location="assets/img_boulon")
-        ecrou = Material(name="Ecrou M5", width=11,length=11,folder_location="assets/img_ecrou")
-        vis = Material(name="Vis M6 x 38",width=12.5,length=38,folder_location="assets/img_vis")
-        vis_blanche = Material(name="Vis Blanche M5 x 50",width=10.4,length=54,folder_location="assets/img_vis_blanche")
+        bolt = Material(name="Boulon M10 x 60", width=21, length=68,folder_location="assets/img_boulon")
+        ecrou = Material(name="Ecrou M5", width=13,length=13,folder_location="assets/img_ecrou")
+        vis = Material(name="Vis M6 x 38",width=14,length=35,folder_location="assets/img_vis")
+        vis_blanche = Material(name="Vis Blanche M5 x 50",width=10.4,length=50,folder_location="assets/img_vis_blanche")
         materials.append(bolt)
         materials.append(ecrou)
         materials.append(vis)
