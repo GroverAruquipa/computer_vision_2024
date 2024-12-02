@@ -35,6 +35,8 @@ cycler==0.12.1
     # via matplotlib
 dacite==1.8.1
     # via -r requirements/requirements.in
+evdev==1.7.1
+    # via pynput
 fonttools==4.54.1
     # via matplotlib
 gitdb==4.0.11
@@ -106,6 +108,8 @@ pygments==2.18.0
     # via rich
 pykinect2==0.1.0
     # via -r requirements/requirements.in
+pynput==1.7.7
+    # via -r requirements/requirements.in
 pyparsing==3.2.0
     # via matplotlib
 pyproject-hooks==1.2.0
@@ -116,6 +120,8 @@ python-dateutil==2.9.0.post0
     # via
     #   matplotlib
     #   pandas
+python-xlib==0.33
+    # via pynput
 pytz==2024.2
     # via pandas
 pyyaml==6.0.2
@@ -138,7 +144,10 @@ rpds-py==0.21.0
 shellingham==1.5.4
     # via typer
 six==1.16.0
-    # via python-dateutil
+    # via
+    #   pynput
+    #   python-dateutil
+    #   python-xlib
 smmap==5.0.1
     # via gitdb
 streamlit==1.40.1
