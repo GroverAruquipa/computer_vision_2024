@@ -1,17 +1,10 @@
-from src.domain.context import PipelineContext
+from typing_extensions import override
+
 from src.domain.calibration.calibration import CalibrationStrategy
+from src.domain.context import PipelineContext
 
 
 class InteractiveCalibrationStrategy(CalibrationStrategy):
+    @override
     def calibrate(self, context: PipelineContext) -> PipelineContext:
-        corners = []
-        ids = []
-        context.calibration_data.update(
-            {
-                "markers": corners,
-                "ids": ids,
-                # TODO: Add calibration matrix, etc.
-            }
-        )
-
         return context

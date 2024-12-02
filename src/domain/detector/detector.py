@@ -1,11 +1,11 @@
 from abc import ABC, abstractmethod
 
-import numpy as np
+from cv2.typing import MatLike
 
 from src.domain.context import Region
 
 
 class ObjectDetectorStrategy(ABC):
     @abstractmethod
-    def detect(self, frame: np.ndarray) -> list[Region]:
+    def detect(self, frame: MatLike) -> list[Region]:
         raise NotImplementedError()
