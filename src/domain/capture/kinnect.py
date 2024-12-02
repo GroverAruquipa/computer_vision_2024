@@ -1,31 +1,46 @@
 import time
-from typing import Optional
 
 import cv2
-import numpy as np
+from cv2.typing import MatLike
 from pykinect2 import PyKinectV2
 from pykinect2.PyKinectRuntime import PyKinectRuntime
+from typing_extensions import override
 
 from src.domain.capture.capture import CaptureStrategy
 from src.domain.context import KinectCaptureConfig
 
 
 class KinectCaptureStrategy(CaptureStrategy):
-    def __init__(self):
+    def __init__(self, config: KinectCaptureConfig):
         super().__init__()
-        self._kinect: Optional[PyKinectRuntime] = None
+        self.config: KinectCaptureConfig = config
+        self._kinect: PyKinectRuntime | None = None
 
-    def _initialize_device(self, config: KinectCaptureConfig) -> None:
+    @override
+    def _initialize_device(self) -> None:
         self._kinect = PyKinectRuntime(PyKinectV2.FrameSourceTypes_Color)
         time.sleep(3)
 
-    def get_frame(self) -> np.ndarray:
-        if self._kinect.has_new_color_frame():
-            frame = self._kinect.get_last_color_frame()
-            frame = frame.reshape((1080, 1920, 4))
-            return cv2.cvtColor(frame, cv2.COLOR_BGRA2BGR)
-        raise RuntimeError("Kinect frame available")
+    @override
+    def get_frame(self) -> MatLike:
+        if self._kinect is None or self._kinect.has_new_color_frame():
+            raise RuntimeError("Kinect frame available")
 
-    def release(self) -> None:
+        frame = self._kinect.get_last_color_frame()
+
+        if frame is None:
+            raise RuntimeError("Kinect frame available")
+
+        frame = frame.reshape((1080, 1920, 4))
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGRA2BGR)
+
+        if frame is None:
+            raise RuntimeError("Kinect frame available")
+
+        return frame
+
+    @override
+    def cleanup(self) -> None:
         if self._kinect:
             self._kinect.close()
+        self._is_initialized = False

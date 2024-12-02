@@ -1,7 +1,8 @@
 import cv2
+from cv2.typing import MatLike
 import numpy as np
 
-from src.domain.context import DetectionConfig, Region, TemplateDetectionConfig
+from src.domain.context import Region, TemplateDetectionConfig
 from src.domain.detector.detector import ObjectDetectorStrategy
 
 
@@ -10,7 +11,7 @@ class TemplateMatchingDetector(ObjectDetectorStrategy):
         super().__init__()
         self.config = config
 
-    def detect(self, frame: np.ndarray) -> list[Region]:
+    def detect(self, frame: MatLike) -> list[Region]:
         regions = []
 
         for template in self.config.templates:
@@ -24,7 +25,7 @@ class TemplateMatchingDetector(ObjectDetectorStrategy):
                 h, w = template.shape[:2]
                 bbox = np.array([[pt[0], pt[1]], [pt[0] + w, pt[1]], [pt[0] + w, pt[1] + h], [pt[0], pt[1] + h]])
 
-                regions.append(Region(bbox=bbox, confidence=result[pt[1], pt[0]].sum())) # TODO: confidence score
+                regions.append(Region(bbox=bbox, confidence=result[pt[1], pt[0]].sum()))  # TODO: confidence score
 
         return self._apply_nms(regions)
 
@@ -39,6 +40,7 @@ class TemplateMatchingDetector(ObjectDetectorStrategy):
         )
 
         return [regions[i] for i in indices]
+
 
 #
 # class TemplateMatchingDetector(ObjectDetectorStrategy):

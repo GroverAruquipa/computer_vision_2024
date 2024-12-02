@@ -1,7 +1,8 @@
 import cv2
+from cv2.typing import MatLike
 import numpy as np
 
-from src.domain.context import DetectionConfig, Region, CannyDetectionConfig
+from src.domain.context import CannyDetectionConfig, Region
 from src.domain.detector.detector import ObjectDetectorStrategy
 
 
@@ -11,7 +12,7 @@ class CannyFeatureDetector(ObjectDetectorStrategy):
         self.matcher = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
         self.config = config
 
-    def detect(self, frame: np.ndarray) -> list[Region]:
+    def detect(self, frame: MatLike) -> list[Region]:
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         edges = cv2.Canny(gray, 100, 200)
         contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -23,7 +24,7 @@ class CannyFeatureDetector(ObjectDetectorStrategy):
                 # Get rotated rectangle
                 rect = cv2.minAreaRect(contour)
                 box = cv2.boxPoints(rect)
-                box = np.int0(box)
+                box = np.i0(box)
 
                 # Extract ROI
                 x, y, w, h = cv2.boundingRect(contour)
@@ -41,6 +42,7 @@ class CannyFeatureDetector(ObjectDetectorStrategy):
                     )
 
         return regions
+
 
 #
 # class FeatureMatchingDetector(ObjectDetectorStrategy):

@@ -1,5 +1,7 @@
 import cv2
+from cv2.typing import MatLike
 import numpy as np
+from numpy.typing import NDArray
 
 from src.domain.context import PipelineContext
 from src.domain.detection import DetectedObject
@@ -11,7 +13,7 @@ class ObjectDetectionService:
         self.context = context
         self.material_repository = material_repository
 
-    def detect_objects(self, frame: np.ndarray) -> list[DetectedObject]:
+    def detect_objects(self, frame: MatLike) -> list[DetectedObject]:
         if not self.context.calibration_data:
             raise RuntimeError("Calibration data not available")
 
@@ -51,7 +53,7 @@ class ObjectDetectionService:
         return detected_objects
 
     @staticmethod
-    def _calculate_match_confidence(frame: np.ndarray, bbox: np.ndarray, template: np.ndarray) -> float:
+    def _calculate_match_confidence(frame: MatLike, bbox: NDArray[np.float64], template: NDArray[np.float64]) -> float:
         x, y, w, h = cv2.boundingRect(bbox)
         roi = frame[y : y + h, x : x + w]
 

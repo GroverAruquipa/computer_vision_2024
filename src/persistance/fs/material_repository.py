@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Any
 
 import cv2
 import numpy as np
@@ -8,7 +9,7 @@ from src.domain.material_repository import MaterialRepository
 
 
 class FileSystemMaterialRepository(MaterialRepository):
-    def __init__(self, materials_config: list[dict]):
+    def __init__(self, materials_config: list[dict[str, Any]]):
         self.materials = [
             Material(
                 name=mat["name"],

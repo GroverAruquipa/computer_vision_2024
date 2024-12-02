@@ -4,12 +4,17 @@ from src.domain.context import PipelineContext
 
 class Pipeline:
     def __init__(self, pipeline_steps: list[PipelineStep], context: PipelineContext):
-        self.pipelineSteps = pipeline_steps
-        self.context = context
+        self.pipeline_steps: list[PipelineStep] = pipeline_steps
+        self.context: PipelineContext = context
 
     def execute(self):
-        for step in self.pipelineSteps:
-            input_context = self.context
-            output_context = step.execute(input_context)
+        try:
+            for step in self.pipeline_steps:
+                input_context = self.context
+                output_context = step.execute(input_context)
+                self.context = output_context
 
-            self.context = output_context
+        except Exception as e:
+            for step in self.pipeline_steps:
+                step.cleanup()
+            raise e
