@@ -217,7 +217,7 @@ class CameraCalibration(NamedTuple):
     dist_coeffs: MatLike
     rvecs: Sequence[MatLike]
     tvecs: Sequence[MatLike]
-    pixel_to_mm_ratio: float = 1
+    pixel_to_m_ratio: float = 1
 
 class BoardDetection(NamedTuple):
     charuco_corners: MatLike

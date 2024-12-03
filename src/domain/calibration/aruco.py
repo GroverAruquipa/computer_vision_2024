@@ -120,7 +120,7 @@ class ArucoCalibrationStrategy(CalibrationStrategy):
         )
         return context
 
-    def _calculate_pixel_to_mm_ratio(self, context: PipelineContext) -> float:
+    def _calculate_pixel_to_m_ratio(self, context: PipelineContext) -> float:
         if not context.calibration.detection:
             self.logger.error("No calibration detections available")
             return 1.0
@@ -143,8 +143,9 @@ class ArucoCalibrationStrategy(CalibrationStrategy):
             pixel_distances.append(pixel_dist)
 
         avg_pixel_distance = np.mean(pixel_distances)
-        square_length_mm = self.config.square_length_meter * self.MM_METERS_FACTOR
-        ratio = square_length_mm / avg_pixel_distance
+        ratio =  avg_pixel_distance / self.config.square_length_meter
+
+        self.logger.info(f"Pixel to m ratio: {ratio}")
         return float(ratio)
 
     def _perform_calibration(self, context: PipelineContext, gray_frame: MatLike) -> PipelineContext:
@@ -156,7 +157,7 @@ class ArucoCalibrationStrategy(CalibrationStrategy):
                 None,
                 None,
             ),
-            self._calculate_pixel_to_mm_ratio(context)
+            self._calculate_pixel_to_m_ratio(context)
         )
 
         context.calibration.calibration = calibration
@@ -172,5 +173,5 @@ class ArucoCalibrationStrategy(CalibrationStrategy):
         np.save(assets_path / "dist_coeffs.npy", calibration.dist_coeffs)
         np.save(assets_path / "rvecs.npy", calibration.rvecs)
         np.save(assets_path / "tvecs.npy", calibration.tvecs)
-        np.save(assets_path / "pixel_to_mm_ratio.npy", calibration.pixel_to_mm_ratio)
+        np.save(assets_path / "pixel_to_m_ratio.npy", calibration.pixel_to_m_ratio)
         self.logger.info(f"Calibration data saved to {assets_path}")
