@@ -12,6 +12,8 @@ from src.domain.material import Material
 ########################################################################################################################
 # Base Models
 class BaseConfig(BaseModel):
+    assets_dir_aruco: str = "./assets/aruco"
+
     class Config:
         arbitrary_types_allowed: bool = True
 
@@ -28,7 +30,6 @@ class EtlConfig(BaseConfig):
 
 class ArucoGenerationConfig(EtlConfig):
     type: Literal["aruco_generation"]
-    assets_dir: str = "./assets/aruco"
     output_file: str = "aruco_board.png"
     dict_type: str = "DICT_4X4_50"
     board_size: tuple[int, int] = (5, 7)
@@ -212,13 +213,14 @@ class PointReferences(NamedTuple):
 
 class CameraCalibration(NamedTuple):
     rep_error: float
-    camMatrix: MatLike
-    distcoeff: MatLike
+    camera_matrix: MatLike
+    dist_coeffs: MatLike
     rvecs: Sequence[MatLike]
     tvecs: Sequence[MatLike]
+    pixel_to_mm_ratio: float = 1
 
 class BoardDetection(NamedTuple):
-    charuco_corners: Sequence[MatLike]
+    charuco_corners: MatLike
     charuco_ids: MatLike
     aruco_corners: Sequence[MatLike]
     aruco_ids: MatLike
@@ -228,7 +230,6 @@ class CalibrationContext(BaseModel):
     points: list[PointReferences] = []
     detection: list[BoardDetection] = []
     ids: list[Any] = []
-    pixel_to_mm_ratio: float = 1
 
     class Config:
         arbitrary_types_allowed: bool = True
@@ -250,7 +251,6 @@ class ArucoCalibrationConfig(CalibrationConfig):
     marker_length_meter: float = 0.1
     min_markers: int = 7
     min_detections: int = 20
-    assets_dir: str = "./assets/aruco"
     output_file: str = "aruco_board.png"
 
 
