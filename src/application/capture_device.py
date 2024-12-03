@@ -81,7 +81,7 @@ class CaptureStep(PipelineStep):
             assets_path / "dist_coeffs.npy",
             assets_path / "rvecs.npy",
             assets_path / "tvecs.npy",
-            assets_path / "pixel_to_mm_ratio.npy"
+            assets_path / "pixel_to_m_ratio.npy"
         ]
 
         if all([asset.exists() for asset in assets]):
