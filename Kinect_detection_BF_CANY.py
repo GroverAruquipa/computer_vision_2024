@@ -203,6 +203,59 @@ class ObjectDetector:
         self.ratio_length = length_calibration_mm / length_calibration_px
 
 
+def sift_two_screws(frame, eps=50, min_samples=2):
+    # Convert frame to grayscale
+    gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    response_threshold = 0.045  # Adjustable threshold
+    # Initialize SIFT detector
+    sift = cv2.SIFT_create()
+
+    # Detect keypoints and compute descriptors
+    keypoints, descriptors = sift.detectAndCompute(gray_frame, None)
+
+    # Filter keypoints based on the response threshold
+    filtered_keypoints = [kp for kp in keypoints if kp.response >= response_threshold]
+
+    # Extract the coordinates of the keypoints
+    keypoint_coords = np.array([[kp.pt[0], kp.pt[1]] for kp in filtered_keypoints])
+
+    if len(keypoint_coords) == 0:
+        print("No keypoints found after filtering.")
+        return frame  # Return original frame if no keypoints
+
+    # Group keypoints using DBSCAN
+    clustering = DBSCAN(eps=eps, min_samples=min_samples).fit(keypoint_coords)
+    labels = clustering.labels_
+
+    # Iterate through each group and draw circles
+    for label in set(labels):
+        if label == -1:
+            continue  # Skip noise points
+        
+        # Get points in the current cluster
+        cluster_points = keypoint_coords[labels == label]
+
+        # Calculate the bounding circle
+        center, radius = cv2.minEnclosingCircle(cluster_points.astype(np.float32))
+
+        # Draw the circle
+        center = tuple(map(int, center))
+        radius = int(radius)
+        cv2.circle(frame, center, radius, (0, 0, 255), thickness=2)  # Red circle
+
+        # Add the label near the circle
+        label_text = "2 screws"
+        text_position = (center[0] + radius + 10, center[1])  # Position text to the right of the circle
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        font_scale = 0.8
+        font_color = (0, 0, 255)  # Red
+        font_thickness = 2
+        cv2.putText(frame, label_text, text_position, font, font_scale, font_color, font_thickness)
+
+    return frame
+
+
+
 def main():
     #print(cv2.__version__)
     # Initialize Kinect
@@ -230,8 +283,11 @@ def main():
                 diff_frame = cv2.absdiff(background, frame)
 
                 # Process the frame to detect objects
+                #
+                processed_frame = sift_two_screws(diff_frame)
+                #
                 processed_frame = detector.process_frame(frame)
-
+                
                 # Display the frame with bounding boxes
                 cv2.imshow('Kinect Video with Object Detection', processed_frame)
 
