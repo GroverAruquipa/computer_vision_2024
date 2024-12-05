@@ -224,7 +224,7 @@ def sift_two_screws(frame, eps=50, min_samples=2):
         return frame  # Return original frame if no keypoints
 
     # Group keypoints using DBSCAN
-    clustering = DBSCAN(eps=eps, min_samples=min_samples).fit(keypoint_coords)
+    #clustering = DBSCAN(eps=eps, min_samples=min_samples).fit(keypoint_coords)
     labels = clustering.labels_
 
     # Iterate through each group and draw circles

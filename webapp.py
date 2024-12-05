@@ -1,3 +1,4 @@
+import os
 import streamlit as st
 import cv2
 import time
@@ -9,13 +10,25 @@ import Kinect_detection_Matcher_DIFF_SameSize_Smooth
 from pykinect2 import PyKinectV2
 from pykinect2.PyKinectRuntime import PyKinectRuntime
 
+def take_background():
+    path = 'assets/'
+    kinect = PyKinectRuntime(PyKinectV2.FrameSourceTypes_Color)
+    time.sleep(3)  # Enough time to let the Kinect power on
+    # Get the background
+    background = kinect.get_last_color_frame()
+    background = background.reshape((1080, 1920, 4))
+    background = cv2.cvtColor(background, cv2.COLOR_BGRA2BGR)
+    cv2.imwrite(os.path.join(path, 'background.jpg'), background)
+    #background = cv2.cvtColor(background, cv2.COLOR_BGRA2BGR)
+    st.success("Le fond d'écran a bien été pris")
+
 st.title("Détection automatique des pièces")
 
 if st.button("Calibration de la caméra"):
     print("Calibration en cours")
 
 if st.button("Prise du fond d'écran"):
-    print("Picture has been taken")
+    take_background()
 
 # select an algorithm
 algo = st.selectbox(
@@ -143,7 +156,3 @@ while True and run and not stop_button_pressed:
     # If press «esc» or hit stop button, end stream
     if cv2.waitKey(1) == 27 or stop_button_pressed:
         break
-
-
-
-
