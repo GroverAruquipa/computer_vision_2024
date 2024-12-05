@@ -20,8 +20,8 @@ def take_background():
     background = cv2.cvtColor(background, cv2.COLOR_BGRA2BGR)
     cv2.imwrite(os.path.join(path, 'background.jpg'), background)
     #background = cv2.cvtColor(background, cv2.COLOR_BGRA2BGR)
-    st.success("Le fond d'écran a bien été pris")
 
+banner = st.empty()
 st.title("Détection automatique des pièces")
 
 if st.button("Calibration de la caméra"):
@@ -29,6 +29,7 @@ if st.button("Calibration de la caméra"):
 
 if st.button("Prise du fond d'écran"):
     take_background()
+    banner.success("Le fond d'écran a bien été pris")
 
 # select an algorithm
 algo = st.selectbox(
