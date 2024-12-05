@@ -27,7 +27,8 @@ if st.button("Calibration de la caméra"):
     print("Calibration en cours")
 
 if st.button("Prise du fond d'écran"):
-    take_background()
+    with st.spinner("Début de la prise de la photo"):
+        take_background()
     banner.success("Le fond d'écran a bien été pris")
 
 # select an algorithm
