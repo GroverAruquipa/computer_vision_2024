@@ -19,7 +19,6 @@ def take_background():
     background = background.reshape((1080, 1920, 4))
     background = cv2.cvtColor(background, cv2.COLOR_BGRA2BGR)
     cv2.imwrite(os.path.join(path, 'background.jpg'), background)
-    #background = cv2.cvtColor(background, cv2.COLOR_BGRA2BGR)
 
 banner = st.empty()
 st.title("Détection automatique des pièces")
