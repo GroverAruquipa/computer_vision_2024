@@ -43,7 +43,7 @@ run = st.checkbox("Démarrer la vidéo")
 # Placeholder for the video frame
 frame_placeholder = st.empty()
 hardware_placeholder = st.empty()
-stop_button_pressed = st.button("Stop") # button to stop the stream
+#stop_button_pressed = st.button("Stop") # button to stop the stream
 
 # Initialize Kinect
 kinect = PyKinectRuntime(PyKinectV2.FrameSourceTypes_Color)
@@ -52,7 +52,7 @@ time.sleep(3)  # Enough time to let the Kinect power on
 # Background for background difference methods
 background = cv2.imread("assets/background.jpg")
 
-while True and run and not stop_button_pressed:
+while True and run:
     if kinect.has_new_color_frame():
         # Get the color frame
         frame = kinect.get_last_color_frame()
@@ -155,5 +155,5 @@ while True and run and not stop_button_pressed:
         hardware_placeholder.markdown(markdown_content)
 
     # If press «esc» or hit stop button, end stream
-    if cv2.waitKey(1) == 27 or stop_button_pressed:
+    if cv2.waitKey(1) == 27:
         break
