@@ -82,7 +82,7 @@ class Matched_Material:
         
 
 class Average_Materials:
-    TIME = 2 #in secondes
+    TIME = 1 #in secondes
     
     def __init__(self):
         self.average_list = []  # List of lists, each containing matched materials
@@ -189,7 +189,7 @@ class Average_Materials:
             material_count[material_name] += 1
 
         # Format the output as a list of strings
-        print([f"{name} qty: {qty}" for name, qty in material_count.items()])
+        return ([f"{name} qty: {qty}" for name, qty in material_count.items()])
 
 
 class ObjectDetector:
@@ -292,9 +292,7 @@ class ObjectDetector:
         contours = self.get_contours(diff)
         matches = self.find_match(contours,frame)
         #Average the last x seconds
-        print("**************************")
         new_matches = self.average_materials.add_material(matches)
-        self.average_materials.get_materials()
         #Draw the matches
         new_frame = self.draw_bounding_box(new_matches,frame)
         return new_frame
@@ -357,10 +355,12 @@ class ObjectDetector:
         ecrou = Material(name="Ecrou M5", width=13,length=13,folder_location="assets/img_ecrou")
         vis = Material(name="Vis M6 x 38",width=14,length=35,folder_location="assets/img_vis")
         vis_blanche = Material(name="Vis Blanche M5 x 50",width=10.4,length=50,folder_location="assets/img_vis_blanche")
+        double_bolt = Material(name="2x Boulon M10 x 60",width=68,length=68,folder_location="assets/img_boulon_double")
         materials.append(bolt)
         materials.append(ecrou)
         materials.append(vis)
         materials.append(vis_blanche)
+        materials.append(double_bolt)
 
 
     def calibration(self):
