@@ -77,7 +77,7 @@ while True and run and not stop_button_pressed:
 
             # Process the frame to detect objects
             processed_frame = detector.process_frame(diff_frame, frame)
-            #string_list = detector.average_materials.get_materials()
+            string_list = detector.average_materials.get_materials()
 
         # Feature matching with background contour
         elif algo=='Diff+feature':
