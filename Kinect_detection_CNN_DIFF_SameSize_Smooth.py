@@ -251,7 +251,7 @@ class ObjectDetector:
             matched_material = None
             for mat in materials:
                 if mat.compare_dimension(bb_width = bb_width, bb_length =bb_length):
-                    if self.compare_images(frame,box_points, cnn_model):
+                    if self.compare_images(frame,box_points, mat, cnn_model):
                         matched_material = Matched_Material(mat,bbox,box)
                         matchs.append(matched_material)
                         break
@@ -313,7 +313,7 @@ class ObjectDetector:
                 templates.append((filename, img))
         return templates
 
-    def compare_images(self, frame, box_points, model) -> bool:
+    def compare_images(self, frame, box_points, mat, model) -> bool:
         x, y, w, h = cv2.boundingRect(box_points)
 
         pad_height = max(0, 150 - h)
@@ -328,17 +328,25 @@ class ObjectDetector:
         # Create ROI
         roi = frame[roi_y_start:roi_y_end, roi_x_start:roi_x_end]      
         roi = cv2.cvtColor(roi, cv2.COLOR_RGB2GRAY) # grayscale
+        roi = cv2.resize(roi, (150, 150))
         roi = roi/255. # convert to 0-1 range
         roi = torch.from_numpy(roi).unsqueeze(0).unsqueeze(0).float() # get correct shape for classifier
 
         # Get model predictions and apply softmax to normalize preds between 0-1
         sfmax = torch.nn.Softmax(-1)
         res = sfmax(model.forward(roi))
-        
-        # Define a more strict threshold
-        threshold = .9
 
-        if torch.max(res) > threshold:
+        labels_map = {
+        0: "Boulon M10 x 60",
+        1: "Ecrou M5",
+        2: "Vis M6 x 38",
+        3: "Vis Blanche M5 x 50",
+        }
+
+        # Define a more strict threshold
+        threshold = .99
+
+        if (torch.max(res) > threshold) and (labels_map[res.argmax(-1).item()] == mat.name):
             return True
 
         return False
