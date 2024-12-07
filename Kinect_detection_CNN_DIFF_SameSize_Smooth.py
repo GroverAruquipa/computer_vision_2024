@@ -57,7 +57,7 @@ matched_material = [[]]
 
 # Initialize cnn classifier
 cnn_model = cnn_fasteners_classifier()
-cnn_model.load_state_dict(torch.load("./cnn_model_double.pth"))
+cnn_model.load_state_dict(torch.load("./cnn_model_double_v3.pth"))
 cnn_model = cnn_model.eval()
 
 class Matched_Material:
@@ -337,11 +337,12 @@ class ObjectDetector:
         res = sfmax(model.forward(roi))
 
         labels_map = {
-        0: "Boulon M10 x 60",
-        1: "2x Boulon M10 x 60",
-        2: "Ecrou M5",
-        3: "Vis M6 x 38",
-        4: "Vis Blanche M5 x 50",
+        0: "Background",
+        1: "Boulon M10 x 60",
+        2: "2x Boulon M10 x 60",
+        3: "Ecrou M5",
+        4: "Vis M6 x 38",
+        5: "Vis Blanche M5 x 50",
         }
 
         # Define a more strict threshold
