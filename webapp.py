@@ -2,11 +2,12 @@ import os
 import streamlit as st
 import cv2
 import time
-import Kinect_detection_BF_CANY_Groover
+import Kinect_detection_BF_CANY_Smooth
 import Kinect_detection_BF_DIFF_SameSize_Smooth
 import Kinect_detection_Matcher_CANY_Smooth
 import Kinect_detection_Matcher_DIFF_SameSize_Smooth
 import Kinect_detection_CNN_DIFF_SameSize_Smooth
+import Kinect_detection_CNN_CANY_SameSize_Smooth
 from pykinect2 import PyKinectV2
 from pykinect2.PyKinectRuntime import PyKinectRuntime
 
@@ -95,7 +96,7 @@ while True and run:
             string_list = detector.average_materials.get_materials()
 
         # Feature matching with background contour
-        elif algo=='Diff+feature':
+        elif algo=='Diff+Feature':
             # get background
             # background = cv2.imread("background.jpg")
 
@@ -108,9 +109,10 @@ while True and run:
 
             # Process the frame to detect objects
             processed_frame = detector.process_frame(diff_frame, frame)
+            string_list = detector.average_materials.get_materials()
 
         # Template matching with Canny contour
-        elif algo=='Canny+template':
+        elif algo=='Canny+Template':
             # get background
             # background = kinect.get_last_color_frame()
             # background = background.reshape((1080, 1920, 4))
@@ -125,16 +127,17 @@ while True and run:
 
             # Process the frame to detect objects
             processed_frame = detector.process_frame(frame)
+            string_list = detector.average_materials.get_materials()
 
         # Feature matching with Canny contour
-        elif algo=='Canny+feature':
+        elif algo=='Canny+Feature':
             # get background
             # background = kinect.get_last_color_frame()
             # background = background.reshape((1080, 1920, 4))
             # background = cv2.cvtColor(background, cv2.COLOR_BGRA2BGR)
 
             # Initialize ObjectDetector
-            detector = Kinect_detection_BF_CANY_Groover.ObjectDetector()
+            detector = Kinect_detection_BF_CANY_Smooth.ObjectDetector()
             detector.calibration() # Perform calibration
 
             # remove background
@@ -142,6 +145,24 @@ while True and run:
 
             # Process the frame to detect objects
             processed_frame = detector.process_frame(frame)
+            string_list = detector.average_materials.get_materials()
+
+        elif algo=='Canny+CNN':
+            # get background
+            # background = kinect.get_last_color_frame()
+            # background = background.reshape((1080, 1920, 4))
+            # background = cv2.cvtColor(background, cv2.COLOR_BGRA2BGR)
+
+            # Initialize ObjectDetector
+            detector = Kinect_detection_CNN_CANY_SameSize_Smooth.ObjectDetector()
+            detector.calibration() # Perform calibration
+
+            # remove background
+            # diff_frame = cv2.absdiff(background, frame)
+
+            # Process the frame to detect objects
+            processed_frame = detector.process_frame(frame)  
+            string_list = detector.average_materials.get_materials()          
 
 
         frame = cv2.cvtColor(processed_frame, cv2.COLOR_BGR2RGB) # Convert to RGB format for Streamlit

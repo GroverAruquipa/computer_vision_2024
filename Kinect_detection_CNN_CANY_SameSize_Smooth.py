@@ -307,8 +307,8 @@ class ObjectDetector:
 
         return frame
 
-    def process_frame(self, diff, frame):
-        contours = self.get_contours(diff)
+    def process_frame(self, frame):
+        contours = self.get_contours(frame)
         matches = self.find_match(contours,frame)
         #Average the last x seconds
         new_matches = self.average_materials.add_material(matches)
@@ -411,11 +411,8 @@ def main():
                 frame = frame.reshape((1080, 1920, 4))
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGRA2RGB)
 
-                # Remove the background from the frame
-                diff_frame = cv2.absdiff(background, frame)
-
                 # Process the frame to detect objects
-                processed_frame = detector.process_frame(diff_frame, frame)
+                processed_frame = detector.process_frame(frame)
                 processed_frame = cv2.cvtColor(processed_frame, cv2.COLOR_RGB2BGR)
 
                 # Display the frame with bounding boxes
