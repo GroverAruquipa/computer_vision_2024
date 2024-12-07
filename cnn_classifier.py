@@ -7,7 +7,7 @@ class cnn_fasteners_classifier(nn.Module):
 
         self.network = nn.Sequential(
             
-            nn.Conv2d(1, 64, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
             nn.MaxPool2d(2, 2),
 
@@ -20,7 +20,7 @@ class cnn_fasteners_classifier(nn.Module):
             nn.ReLU(),
             nn.Linear(512, 128),
             nn.ReLU(),
-            nn.Linear(128, 6),
+            nn.Linear(128, 7),
         )
 
     def forward(self, x, verbose=False):

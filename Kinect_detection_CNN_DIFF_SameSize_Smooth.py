@@ -57,7 +57,7 @@ matched_material = [[]]
 
 # Initialize cnn classifier
 cnn_model = cnn_fasteners_classifier()
-cnn_model.load_state_dict(torch.load("./cnn_model_double_v3.pth"))
+cnn_model.load_state_dict(torch.load("./cnn_model_double_color_intrus.pth"))
 cnn_model = cnn_model.eval()
 
 class Matched_Material:
@@ -327,10 +327,13 @@ class ObjectDetector:
 
         # Create ROI
         roi = frame[roi_y_start:roi_y_end, roi_x_start:roi_x_end]      
-        roi = cv2.cvtColor(roi, cv2.COLOR_RGB2GRAY) # grayscale
+        # roi = cv2.cvtColor(roi, cv2.COLOR_RGB2GRAY) # grayscale
         roi = cv2.resize(roi, (150, 150))
         roi = roi/255. # convert to 0-1 range
-        roi = torch.from_numpy(roi).unsqueeze(0).unsqueeze(0).float() # get correct shape for classifier
+        # roi = torch.from_numpy(roi).unsqueeze(0).unsqueeze(0).float() # get correct shape for classifier
+        roi = torch.from_numpy(roi).unsqueeze(0).float() # get correct shape for classifier
+        roi = torch.permute(roi, (0, 3, 1, 2))
+
 
         # Get model predictions and apply softmax to normalize preds between 0-1
         sfmax = torch.nn.Softmax(-1)
@@ -343,10 +346,11 @@ class ObjectDetector:
         3: "Ecrou M5",
         4: "Vis M6 x 38",
         5: "Vis Blanche M5 x 50",
+        6: "Intrus",
         }
 
         # Define a more strict threshold
-        threshold = .95
+        threshold = .7
 
         if (torch.max(res) > threshold) and (labels_map[res.argmax(-1).item()] == mat.name):
             return True
