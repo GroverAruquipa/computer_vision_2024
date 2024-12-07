@@ -20,7 +20,7 @@ class cnn_fasteners_classifier(nn.Module):
             nn.ReLU(),
             nn.Linear(512, 128),
             nn.ReLU(),
-            nn.Linear(128, 4),
+            nn.Linear(128, 5),
         )
 
     def forward(self, x, verbose=False):
