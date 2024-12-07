@@ -2,10 +2,9 @@ import os
 import streamlit as st
 import cv2
 import time
-import Kinect_detection_BF_CANY
-import Kinect_detection_BF_DIFF_SameSize
-import Kinect_detection_Matcher_CANY
-import Kinect_detection_Matcher_DIFF_SameSize
+import Kinect_detection_BF_CANY_Groover
+import Kinect_detection_BF_DIFF_SameSize_Smooth
+import Kinect_detection_Matcher_CANY_Smooth
 import Kinect_detection_Matcher_DIFF_SameSize_Smooth
 import Kinect_detection_CNN_DIFF_SameSize_Smooth
 from pykinect2 import PyKinectV2
@@ -35,7 +34,7 @@ if st.button("Prise du fond d'écran"):
 # select an algorithm
 algo = st.selectbox(
     "Choisir un algorithm",
-    ("Diff+template","Diff+template+tracker", 'Diff+CNN+Smooth',"Diff+feature", "Canny+template", "Canny+feature"),
+    ("Diff+Template", 'Diff+CNN',"Diff+Feature", "Canny+Template", "Canny+Feature", "Canny+CNN"),
 )
 
 # Run only once checked
@@ -64,22 +63,7 @@ while True and run:
         frame = frame.reshape((1080, 1920, 4)) # reshape
         frame = cv2.cvtColor(frame, cv2.COLOR_BGRA2BGR) # convert to openCV format
 
-        # Template matching with background contour
-        if algo=="Diff+template":
-            # get background
-            # background = cv2.imread("background.jpg")
-
-            # Initialize ObjectDetector
-            detector = Kinect_detection_Matcher_DIFF_SameSize.ObjectDetector()
-            detector.calibration() # Perform calibration
-
-            # remove background
-            diff_frame = cv2.absdiff(background, frame)
-
-            # Process the frame to detect objects
-            processed_frame = detector.process_frame(diff_frame, frame)
-
-        if algo=="Diff+template+tracker":
+        if algo=="Diff+Template":
             # get background
             # background = cv2.imread("background.jpg")
 
@@ -95,7 +79,7 @@ while True and run:
             string_list = detector.average_materials.get_materials()
 
         
-        if algo=="Diff+CNN+Smooth":
+        if algo=="Diff+CNN":
             # get background
             # background = cv2.imread("background.jpg")
 
@@ -116,7 +100,7 @@ while True and run:
             # background = cv2.imread("background.jpg")
 
             # Initialize ObjectDetector
-            detector = Kinect_detection_BF_DIFF_SameSize.ObjectDetector()
+            detector = Kinect_detection_BF_DIFF_SameSize_Smooth.ObjectDetector()
             detector.calibration() # Perform calibration
 
             # remove background
@@ -133,7 +117,7 @@ while True and run:
             # background = cv2.cvtColor(background, cv2.COLOR_BGRA2BGR)
 
             # Initialize ObjectDetector
-            detector = Kinect_detection_Matcher_CANY.ObjectDetector()
+            detector = Kinect_detection_Matcher_CANY_Smooth.ObjectDetector()
             detector.calibration() # Perform calibration
 
             # remove background
@@ -150,7 +134,7 @@ while True and run:
             # background = cv2.cvtColor(background, cv2.COLOR_BGRA2BGR)
 
             # Initialize ObjectDetector
-            detector = Kinect_detection_BF_CANY.ObjectDetector()
+            detector = Kinect_detection_BF_CANY_Groover.ObjectDetector()
             detector.calibration() # Perform calibration
 
             # remove background
