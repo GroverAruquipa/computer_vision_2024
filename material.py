@@ -6,7 +6,7 @@ class Material:
         self.folder_location = folder_location
 
     def compare_dimension(self, bb_width: float, bb_length: float) -> bool:
-        ratio = 0.25
+        ratio = 0.3
 
         min_width = self.width * (1 - ratio)
         max_width = self.width * (1 + ratio)

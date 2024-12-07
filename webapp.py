@@ -7,6 +7,7 @@ import Kinect_detection_BF_DIFF_SameSize
 import Kinect_detection_Matcher_CANY
 import Kinect_detection_Matcher_DIFF_SameSize
 import Kinect_detection_Matcher_DIFF_SameSize_Smooth
+import Kinect_detection_CNN_DIFF_SameSize_Smooth
 from pykinect2 import PyKinectV2
 from pykinect2.PyKinectRuntime import PyKinectRuntime
 
@@ -34,7 +35,7 @@ if st.button("Prise du fond d'écran"):
 # select an algorithm
 algo = st.selectbox(
     "Choisir un algorithm",
-    ("Diff+template","Diff+template+tracker", "Diff+feature", "Canny+template", "Canny+feature"),
+    ("Diff+template","Diff+template+tracker", 'Diff+CNN+Smooth',"Diff+feature", "Canny+template", "Canny+feature"),
 )
 
 # Run only once checked
@@ -84,6 +85,22 @@ while True and run:
 
             # Initialize ObjectDetector
             detector = Kinect_detection_Matcher_DIFF_SameSize_Smooth.ObjectDetector()
+            detector.calibration() # Perform calibration
+
+            # remove background
+            diff_frame = cv2.absdiff(background, frame)
+
+            # Process the frame to detect objects
+            processed_frame = detector.process_frame(diff_frame, frame)
+            string_list = detector.average_materials.get_materials()
+
+        
+        if algo=="Diff+CNN+Smooth":
+            # get background
+            # background = cv2.imread("background.jpg")
+
+            # Initialize ObjectDetector
+            detector = Kinect_detection_CNN_DIFF_SameSize_Smooth.ObjectDetector()
             detector.calibration() # Perform calibration
 
             # remove background
