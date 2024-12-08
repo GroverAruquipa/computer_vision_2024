@@ -10,7 +10,7 @@ Ce projet présente la mise en œuvre de différents algorithmes pour la détect
 Clone the project
 
 ```bash
-  git clone https://github.com/GroverAruquipa/computer_vision_2024
+  git clone https://github.com/computer_vision_2024
 ```
 
 Go to the project directory
