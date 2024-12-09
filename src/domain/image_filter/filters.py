@@ -6,6 +6,7 @@ from typing_extensions import override
 
 from src.domain.context import (
     BackgroundSubtractionFilterConfig,
+    CannyFilterConfig,
     CaptureContext,
     GaussianBlurFilterConfig,
     ThresholdFilterConfig,
@@ -53,3 +54,18 @@ class BackgroundSubtractionFilter(ImageFilter):
         if context.frame is None or context.background is None:
             return None
         return cv2.absdiff(context.background, context.frame)
+
+
+class CannyFilter(ImageFilter):
+    def __init__(self, config: CannyFilterConfig):
+        self.config: CannyFilterConfig = config
+
+    @override
+    def process(self, context: CaptureContext) -> MatLike | None:
+        if context.frame is None or context.background is None:
+            return None
+
+        med_val = np.median(context.frame)
+        lower = int(max(self.config.min_value, self.config.scaling_factors[0] * med_val))
+        upper = int(min(self.config.max_value, self.config.scaling_factors[1] * med_val))
+        return cv2.Canny(context.frame, lower, upper)
