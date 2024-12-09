@@ -6,6 +6,7 @@ from cv2.typing import MatLike
 from numpy.typing import NDArray
 from pydantic import BaseModel, Field
 
+from src.domain.detection import DetectedObject
 from src.domain.material import Material
 
 
@@ -113,7 +114,7 @@ class SimpleRenderConfig(RenderConfig):
 ########################################################################################################################
 # Image Filter Config
 
-ImageFilterTypes = Literal["grayscale", "gaussian_blur", "threshold", "background_subtraction"]
+ImageFilterTypes = Literal["grayscale", "gaussian_blur", "threshold", "background_subtraction", "canny"]
 
 
 class ImageFilterConfig(BaseConfig):
@@ -137,25 +138,33 @@ class ThresholdFilterConfig(ImageFilterConfig):
 class BackgroundSubtractionFilterConfig(ImageFilterConfig):
     type: Literal["background_subtraction"]
 
+class CannyFilterConfig(ImageFilterConfig):
+    type: Literal["canny"]
+    min_value: int = 0
+    max_value: int = 255
+    lower_scaling_factor: float = 0.4
+    upper_scaling_factor: float = 1.3
+
 
 ########################################################################################################################
 # Detection Config
 
 
 class DetectionContext(BaseModel):
-    detected_objects: list["Material"] | None = None
-    detections: list[Region] | None = None
+    detections: list[DetectedObject] | None = None
+    tracking: list[DetectedObject] | None = None
 
 
-DetectionTypes = Literal["canny", "template"]
+DetectionTypes = Literal["contour", "template"]
 
 
 class DetectionConfig(BaseConfig):
     type: DetectionTypes
+    tracking: TrackingConfig
 
 
-class CannyDetectionConfig(DetectionConfig):
-    type: Literal["canny"]
+class ContourDetectionConfig(DetectionConfig):
+    type: Literal["contour"]
     min_area: int = 50
     max_area: int = 100000
 
@@ -165,6 +174,10 @@ class TemplateDetectionConfig(DetectionConfig):
     confidence_threshold: float = 0.5
     nms_threshold: float = 0.3
 
+class TrackingConfig(DetectionConfig):
+    buffer: int = 10
+    max_miss: int = 5
+
 
 ########################################################################################################################
 # Capture Device Config
@@ -172,6 +185,7 @@ class TemplateDetectionConfig(DetectionConfig):
 
 class CaptureContext(BaseModel):
     frame: MatLike | None = None
+    viz_frame: MatLike | None = None
     background: MatLike | None = None
     frame_ns_epoch: int = 0
 
@@ -185,6 +199,7 @@ CaptureTypes = Literal["webcam", "video", "kinect"]
 class CaptureConfig(BaseConfig):
     type: CaptureTypes
     fps: int = 30
+    background_path = "assets/background.jpg"
 
 
 class WebcamCaptureConfig(CaptureConfig):
@@ -266,6 +281,10 @@ class PipelineContext(BaseModel):
     capture: CaptureContext = Field(default_factory=CaptureContext)
     detection: DetectionContext = Field(default_factory=DetectionContext)
     calibration: CalibrationContext = Field(default_factory=CalibrationContext)
+    materials: list[Material] = [
+        Material("Bolt", 18.1, 66.5, "assets/templates/bolt.jpg"),
+        Material("Nut", 11.0, 11.0, "assets/templates/nut.jpg"),
+    ]
 
 
 # Pipeline Step Configuration
@@ -281,8 +300,9 @@ StepConfig = Annotated[
     | GaussianBlurFilterConfig
     | ThresholdFilterConfig
     | BackgroundSubtractionFilterConfig
+    | CannyFilterConfig
     # Detection
-    | CannyDetectionConfig
+    | ContourDetectionConfig
     | TemplateDetectionConfig
     # Calibration
     | ArucoCalibrationConfig

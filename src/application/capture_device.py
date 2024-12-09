@@ -28,7 +28,13 @@ class CaptureStep(PipelineStep):
         self._wait_next_capture(context, now_ns_epoch)
         frame = self.capture_strategy.get_frame()
 
+        if context.capture.background is None and Path(self.config.background_path).exists():
+            cv2.imread(self.config.background_path)
+        elif context.capture.background is None:
+            context.capture.background = frame
+
         context.capture.frame = frame
+        context.capture.viz_frame = frame
         context.capture.frame_ns_epoch = now_ns_epoch
         context = self._calibrate(context)
         return context

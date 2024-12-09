@@ -7,5 +7,5 @@ from src.domain.context import Region
 
 class ObjectDetectorStrategy(ABC):
     @abstractmethod
-    def detect(self, frame: MatLike) -> list[Region]:
+    def detect(self, context: PipelineContext) -> PipelineContext:
         raise NotImplementedError()

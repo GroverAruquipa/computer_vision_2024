@@ -1,3 +1,4 @@
+from pathlib import Path
 import time
 
 import cv2
@@ -19,17 +20,17 @@ class KinectCaptureStrategy(CaptureStrategy):
     @override
     def _initialize_device(self) -> None:
         self._kinect = PyKinectRuntime(PyKinectV2.FrameSourceTypes_Color)
-        time.sleep(3)
+        time.sleep(5)
 
     @override
     def get_frame(self) -> MatLike:
-        if self._kinect is None or self._kinect.has_new_color_frame():
-            raise RuntimeError("Kinect frame available")
+        if self._kinect is None:
+            self._initialize_device()
 
         frame = self._kinect.get_last_color_frame()
 
         if frame is None:
-            raise RuntimeError("Kinect frame available")
+            raise RuntimeError("Kinect frame unavailable")
 
         frame = frame.reshape((1080, 1920, 4))
         frame = cv2.cvtColor(frame, cv2.COLOR_BGRA2BGR)

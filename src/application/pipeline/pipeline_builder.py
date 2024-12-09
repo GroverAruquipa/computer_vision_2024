@@ -17,7 +17,8 @@ from src.domain.context import (
     BackgroundSubtractionFilterConfig,
     CalibrationConfig,
     CalibrationTypes,
-    CannyDetectionConfig,
+    CannyFilterConfig,
+    ContourDetectionConfig,
     CaptureConfig,
     CaptureTypes,
     CliWaitConfig,
@@ -44,14 +45,16 @@ from src.domain.context import (
     WaitTypes,
     WebcamCaptureConfig,
 )
-from src.domain.detector.canny import CannyFeatureDetector
+from src.domain.detector.contour import ContourDetector
 from src.domain.detector.template import TemplateMatchingDetector
 from src.domain.image_filter.filters import (
     BackgroundSubtractionFilter,
+    CannyFilter,
     GaussianBlurFilter,
     GrayscaleFilter,
     ThresholdFilter,
 )
+from src.domain.tracking.tracker import Tracker
 from src.domain.wait.cli_wait import CliWaitStrategy
 from src.domain.wait.timer_wait import TimerWaitStrategy
 
@@ -121,13 +124,17 @@ class PipelineBuilder:
                 return ImageFilterStep(ThresholdFilter(cast(ThresholdFilterConfig, config)))
             case "background_subtraction":
                 return ImageFilterStep(BackgroundSubtractionFilter(cast(BackgroundSubtractionFilterConfig, config)))
+            case "canny":
+                return ImageFilterStep(CannyFilter(cast(CannyFilterConfig, config)))
 
     def _create_detection_step(self, config: DetectionConfig) -> PipelineStep:
         match config.type:
-            case "canny":
-                return ObjectDetectionStep(CannyFeatureDetector(cast(CannyDetectionConfig, config)))
+            case "contour":
+                config = cast(ContourDetectionConfig, config)
+                return ObjectDetectionStep(ContourDetector(config), Tracker(config.tracking))
             case "template":
-                return ObjectDetectionStep(TemplateMatchingDetector(cast(TemplateDetectionConfig, config)))
+                config = cast(TemplateDetectionConfig, config)
+                return ObjectDetectionStep(TemplateMatchingDetector(config), Tracker(config.tracking))
 
     def _create_calibration_step(self, config: CalibrationConfig) -> PipelineStep:
         match config.type:

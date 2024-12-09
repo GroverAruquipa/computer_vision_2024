@@ -1,8 +1,10 @@
+from typing_extensions import override
 import cv2
 from cv2.typing import MatLike
 import numpy as np
 
-from src.domain.context import Region, TemplateDetectionConfig
+from src.domain.context import PipelineContext, Region, TemplateDetectionConfig
+from src.domain.detection import DetectedObject
 from src.domain.detector.detector import ObjectDetectorStrategy
 
 
@@ -11,70 +13,36 @@ class TemplateMatchingDetector(ObjectDetectorStrategy):
         super().__init__()
         self.config = config
 
-    def detect(self, frame: MatLike) -> list[Region]:
-        regions = []
+    @override
+    def detect(self, context: PipelineContext) -> PipelineContext:
+        detected_objects = []
 
-        for template in self.config.templates:
-            # Apply template matching
+        for material in context.materials:
+            template = cv2.imread(material.template_path, cv2.IMREAD_GRAYSCALE)
+            if template is None:
+                self.logger.error(f"Can't read the template image: {material.template_path}")
+                continue
+
             result = cv2.matchTemplate(frame, template, cv2.TM_CCOEFF_NORMED)
-
-            # Find locations above threshold
             locations = np.where(result >= self.config.confidence_threshold)
 
+            # TODO: this or that
+            # for pt in zip(*locations[::-1]):
+            #     h, w = template.shape[:2]
+            #     bbox = np.array([[pt[0], pt[1]], [pt[0] + w, pt[1]], [pt[0] + w, pt[1] + h], [pt[0], pt[1] + h]])
+            #
+            #     regions.append(Region(bbox=bbox, confidence=result[pt[1], pt[0]].sum()))  # TODO: confidence score
             for pt in zip(*locations[::-1]):
-                h, w = template.shape[:2]
-                bbox = np.array([[pt[0], pt[1]], [pt[0] + w, pt[1]], [pt[0] + w, pt[1] + h], [pt[0], pt[1] + h]])
+                bbox = np.array([pt[0], pt[1], template.shape[1], template.shape[0]])
+                detected_objects.append(
+                    DetectedObject(
+                        material=material,
+                        region=Region(bbox=bbox, confidence=result[pt[1], pt[0]].sum()),
+                        tracking_id=1
+                    )
+                )
 
-                regions.append(Region(bbox=bbox, confidence=result[pt[1], pt[0]].sum()))  # TODO: confidence score
+        context.detection.detected_objects = detected_objects
 
-        return self._apply_nms(regions)
+        return context
 
-    def _apply_nms(self, regions: list[Region]) -> list[Region]:
-        # Convert regions to format suitable for NMS
-        boxes = np.array([cv2.boundingRect(r.bbox) for r in regions])
-        scores = np.array([r.confidence for r in regions])
-
-        # Apply NMS
-        indices = cv2.dnn.NMSBoxes(
-            boxes.tolist(), scores.tolist(), self.config.confidence_threshold, self.config.nms_threshold
-        )
-
-        return [regions[i] for i in indices]
-
-
-#
-# class TemplateMatchingDetector(ObjectDetectorStrategy):
-#     def detect(self, frame: np.ndarray, config: DetectionConfig) -> list[Region]:
-#         # Convert frame to grayscale
-#         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-#
-#         # Apply preprocessing
-#         blurred = cv2.GaussianBlur(gray, (5, 5), 0)
-#         _, thresh = cv2.threshold(blurred, 30, 255, cv2.THRESH_BINARY)
-#
-#         # Find contours
-#         contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-#
-#         regions = []
-#         for contour in contours:
-#             area = cv2.contourArea(contour)
-#             if config.min_area <= area <= config.max_area:
-#                 # Get rotated rectangle
-#                 rect = cv2.minAreaRect(contour)
-#                 box = cv2.boxPoints(rect)
-#                 box = np.int0(box)
-#
-#                 # Get ROI
-#                 x, y, w, h = cv2.boundingRect(contour)
-#                 roi = frame[y:y+h, x:x+w]
-#
-#                 # Template matching would go here
-#                 # For each template:
-#                 #   - Resize template to match ROI size
-#                 #   - Apply template matching
-#                 #   - Get confidence score
-#                 confidence = 0.5  # Placeholder
-#
-#                 regions.append(Region(bbox=box, confidence=confidence))
-#
-#         return self._apply_nms(regions, config)
