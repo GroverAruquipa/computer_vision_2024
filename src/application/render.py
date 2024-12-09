@@ -18,12 +18,13 @@ class RenderStep(PipelineStep):
             return context
 
         context = self.visualize_detections(context)
-        context = self.draw_detection(context)
+        # context = self.draw_detection(context)
 
         if context.capture.viz_frame is None:
             return context
 
-        cv2.imshow(self.config.window_name, context.capture.viz_frame)
+        if self.config.show:
+            cv2.imshow(self.config.window_name, context.capture.viz_frame)
 
         return context
 

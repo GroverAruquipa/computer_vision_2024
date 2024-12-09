@@ -42,7 +42,7 @@ class TemplateMatchingDetector(ObjectDetectorStrategy):
                     )
                 )
 
-        context.detection.detected_objects = detected_objects
+        context.detection.detections = detected_objects
 
         return context
 

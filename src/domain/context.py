@@ -105,6 +105,7 @@ RenderTypes = Literal["render", "render"]
 class RenderConfig(BaseConfig):
     type: RenderTypes
     window_name: str = "Object Detection"
+    show: bool = True
 
 
 class SimpleRenderConfig(RenderConfig):
