@@ -155,8 +155,16 @@ class DetectionContext(BaseModel):
     detections: list[DetectedObject] | None = None
     tracking: list[DetectedObject] | None = None
 
+    class Config:
+        arbitrary_types_allowed: bool = True
+
 
 DetectionTypes = Literal["contour", "template"]
+
+
+class TrackingConfig:
+    buffer: int = 10
+    max_miss: int = 5
 
 
 class DetectionConfig(BaseConfig):
@@ -174,10 +182,6 @@ class TemplateDetectionConfig(DetectionConfig):
     type: Literal["template"]
     confidence_threshold: float = 0.5
     nms_threshold: float = 0.3
-
-class TrackingConfig(DetectionConfig):
-    buffer: int = 10
-    max_miss: int = 5
 
 
 ########################################################################################################################
@@ -200,7 +204,7 @@ CaptureTypes = Literal["webcam", "video", "kinect"]
 class CaptureConfig(BaseConfig):
     type: CaptureTypes
     fps: int = 30
-    background_path = "assets/background.jpg"
+    background_path: str = "assets/background.jpg"
 
 
 class WebcamCaptureConfig(CaptureConfig):
@@ -227,6 +231,9 @@ class PointReferences(NamedTuple):
     object_points: MatLike
     image_points: MatLike
 
+    class Config:
+        arbitrary_types_allowed: bool = True
+
 class CameraCalibration(NamedTuple):
     rep_error: float
     camera_matrix: MatLike
@@ -235,11 +242,17 @@ class CameraCalibration(NamedTuple):
     tvecs: Sequence[MatLike]
     pixel_to_m_ratio: float = 1
 
+    class Config:
+        arbitrary_types_allowed: bool = True
+
 class BoardDetection(NamedTuple):
     charuco_corners: MatLike
     charuco_ids: MatLike
     aruco_corners: Sequence[MatLike]
     aruco_ids: MatLike
+
+    class Config:
+        arbitrary_types_allowed: bool = True
 
 class CalibrationContext(BaseModel):
     calibration: CameraCalibration | None = None

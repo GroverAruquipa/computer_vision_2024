@@ -14,7 +14,7 @@ from pykinect2.PyKinectRuntime import PyKinectRuntime
 from src.application.calibration import CalibrationStep
 from src.application.render import RenderStep
 from src.domain.calibration.aruco import ArucoCalibrationStrategy
-from src.domain.context import ArucoCalibrationConfig, GrayscaleFilterConfig, PipelineContext, RenderConfig
+from src.domain.context import ArucoCalibrationConfig, PipelineContext, RenderConfig
 from src.domain.image_filter.filters import GrayscaleFilter
 
 
