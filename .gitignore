@@ -1,3 +1,7 @@
+### Assets ###
+
+*.mp4
+
 ### Linux ###
 *~
 
@@ -154,8 +158,9 @@ cython_debug/
 # ruff
 .ruff_cache/
 
-# LSP config files
+# LSP
 pyrightconfig.json
+.ropeproject/
 
 ### venv ###
 # Virtualenv
@@ -187,3 +192,5 @@ pip-selfcheck.json
 # Ignore all local history of files
 .history
 .ionide
+
+assets/aruco

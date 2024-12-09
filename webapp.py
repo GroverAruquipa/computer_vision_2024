@@ -11,21 +11,16 @@ import Kinect_detection_CNN_CANY_SameSize_Smooth
 from pykinect2 import PyKinectV2
 from pykinect2.PyKinectRuntime import PyKinectRuntime
 
-def take_background():
-    path = 'assets/'
-    kinect = PyKinectRuntime(PyKinectV2.FrameSourceTypes_Color)
-    time.sleep(3)  # Enough time to let the Kinect power on
-    # Get the background
-    background = kinect.get_last_color_frame()
-    background = background.reshape((1080, 1920, 4))
-    background = cv2.cvtColor(background, cv2.COLOR_BGRA2BGR)
-    cv2.imwrite(os.path.join(path, 'background.jpg'), background)
+from calibration import ArucoCalibrationConfig, ArucoCalibrationStrategy
+
 
 banner = st.empty()
 st.title("Détection automatique des pièces")
 
 if st.button("Calibration de la caméra"):
-    print("Calibration en cours")
+    with st.spinner("Début de la prise de la photo"):
+        calibrate_camera()
+    banner.success("Le fond d'écran a bien été pris")
 
 if st.button("Prise du fond d'écran"):
     with st.spinner("Début de la prise de la photo"):
@@ -52,6 +47,42 @@ time.sleep(3)  # Enough time to let the Kinect power on
 
 # Background for background difference methods
 background = cv2.imread("assets/background.jpg")
+
+
+def render_frame(frame):
+    # Convert to RGB format for Streamlit and fill the placeholder
+    st_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    frame_placeholder.image(st_frame,channels="RGB")
+
+
+def calibrate_camera():
+
+    calibrator = ArucoCalibrationStrategy(ArucoCalibrationConfig())
+    kinect = PyKinectRuntime(PyKinectV2.FrameSourceTypes_Color)
+    time.sleep(3)
+
+    while True and not calibrator.is_calibration_finished:
+        if kinect.has_new_color_frame():
+            frame = kinect.get_last_color_frame()
+
+            if frame is not None:
+                frame = frame.reshape((1080, 1920, 4))
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGRA2BGR)
+
+                frame = calibrator.calibrate(frame)
+                render_frame(frame)
+
+
+def take_background():
+    path = 'assets/'
+    kinect = PyKinectRuntime(PyKinectV2.FrameSourceTypes_Color)
+    time.sleep(3)  # Enough time to let the Kinect power on
+    # Get the background
+    background = kinect.get_last_color_frame()
+    background = background.reshape((1080, 1920, 4))
+    background = cv2.cvtColor(background, cv2.COLOR_BGRA2BGR)
+    cv2.imwrite(os.path.join(path, 'background.jpg'), background)
+
 
 while True and run:
     if kinect.has_new_color_frame():
@@ -165,8 +196,7 @@ while True and run:
             string_list = detector.average_materials.get_materials()          
 
 
-        frame = cv2.cvtColor(processed_frame, cv2.COLOR_BGR2RGB) # Convert to RGB format for Streamlit
-        frame_placeholder.image(frame,channels="RGB") # Fill empty placeholder with the camera frame using st.image
+        render_frame(frame)
 
         # Create a single Markdown string for the list
         markdown_content = "**Liste du matériels détectés:**\n"
