@@ -171,11 +171,6 @@ def main(capture: Union[KinectCapture, WebcamCapture]):
     application_step = ApplicationSteps.WAIT
     banner = st.empty()
 
-    # Placeholder for the video frame
-    frame_placeholder = st.empty()
-    hardware_placeholder = st.empty()
-    # stop_button_pressed = st.button("Stop") # button to stop the stream
-
     st.title("Détection automatique des pièces")
 
     if st.button("Calibration de la caméra"):
@@ -189,6 +184,11 @@ def main(capture: Union[KinectCapture, WebcamCapture]):
         "Choisir un algorithm",
         ("Diff+Template", "Diff+CNN", "Diff+Feature", "Canny+Template", "Canny+Feature", "Canny+CNN"),
     )
+
+    # Placeholder for the video frame
+    frame_placeholder = st.empty()
+    hardware_placeholder = st.empty()
+    # stop_button_pressed = st.button("Stop") # button to stop the stream
 
     # Run only once checked
     run = st.checkbox("Démarrer la detection")

@@ -43,7 +43,7 @@ class KinectCapture(Capture):
         return self.last_frame
 
 
-@st.cache(allow_output_mutation=True)
+@st.cache_resource
 class WebcamCapture(Capture):
     def __init__(self, device_id: int):
         self.background = cv2.imread("assets/background.jpg")
