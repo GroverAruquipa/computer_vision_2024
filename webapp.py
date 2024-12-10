@@ -19,19 +19,16 @@ def render_frame(frame, frame_placeholder) -> DeltaGenerator:
 def calibrate_camera(capture: KinectCapture, frame_placeholder) -> DeltaGenerator:
     calibrator = ArucoCalibrationStrategy(ArucoCalibrationConfig())
 
-    while True and not calibrator.is_calibration_finished:
+    while True and not calibrator.is_finished():
         frame = capture.get_frame()
         if frame is not None:
-            frame = frame.reshape((1080, 1920, 4))
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGRA2BGR)
-
             frame = calibrator.calibrate(frame)
             frame_placeholder = render_frame(frame, frame_placeholder)
 
     return frame_placeholder
 
 
-def detection_loop(frame: Any, algo: str, hardware_placeholder: DeltaGenerator) -> DeltaGenerator:
+def detection_loop(frame: Any, background: Any,algo: str, hardware_placeholder: DeltaGenerator) -> DeltaGenerator:
     import Kinect_detection_BF_CANY_Smooth
     import Kinect_detection_BF_DIFF_SameSize_Smooth
     import Kinect_detection_CNN_CANY_SameSize_Smooth
@@ -167,6 +164,7 @@ class ApplicationSteps(Enum):
     DETECTION = 2
     BACKGROUND = 3
     WAIT = 4
+    STOP = 5
 
 
 def main(capture: Union[KinectCapture, WebcamCapture]):
@@ -195,25 +193,33 @@ def main(capture: Union[KinectCapture, WebcamCapture]):
     # Run only once checked
     run = st.checkbox("Démarrer la detection")
 
-    while True and application_step != ApplicationSteps.WAIT:
+    background = capture.background
+    while True and application_step != ApplicationSteps.STOP:
         frame = capture.get_frame()
-        background = capture.background
 
         if run:
             application_step = ApplicationSteps.DETECTION
 
         if application_step == ApplicationSteps.DETECTION:
-            hardware_placeholder = detection_loop(frame, algo, hardware_placeholder)
+            hardware_placeholder = detection_loop(frame, background, algo, hardware_placeholder)
+
+        if application_step == ApplicationSteps.WAIT:
+            frame_placeholder = render_frame(frame, frame_placeholder)
 
         if application_step == ApplicationSteps.CALIBRATION:
-            with st.spinner("Début de la prise de la photo"):
+            with st.spinner("Début de la calibration"):
                 frame_placeholder = calibrate_camera(capture, frame_placeholder)
-            banner.success("Le fond d'écran a bien été pris")
+            banner.success("Calibration complétée")
+            application_step = ApplicationSteps.WAIT
 
         if application_step == ApplicationSteps.BACKGROUND:
             with st.spinner("Début de la prise de la photo"):
-                capture.take_background()
+                background = capture.get_frame()
             banner.success("Le fond d'écran a bien été pris")
+            application_step = ApplicationSteps.WAIT
+
+        if cv2.waitKey(1) == ord("s"):
+            application_step = ApplicationSteps.STOP
 
         # If press «esc» or hit stop button, end stream
         if cv2.waitKey(1) == 27:

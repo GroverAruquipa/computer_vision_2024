@@ -66,6 +66,9 @@ class ArucoCalibrationStrategy:
         except OSError as e:
             self.logger.error(f"Failed to delete aruco dir : {e}")
 
+    def is_finished(self) -> bool:
+        return self.is_calibration_finished
+
     def calibrate(self, frame: Any) -> Any:
         gray_frame = self.grayscale_filter.process(frame)
 
