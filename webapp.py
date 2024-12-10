@@ -2,6 +2,8 @@ import os
 import streamlit as st
 import cv2
 import time
+
+from streamlit.delta_generator import DeltaGenerator
 import Kinect_detection_BF_CANY_Smooth
 import Kinect_detection_BF_DIFF_SameSize_Smooth
 import Kinect_detection_Matcher_CANY_Smooth
@@ -14,13 +16,14 @@ from pykinect2.PyKinectRuntime import PyKinectRuntime
 from calibration import ArucoCalibrationConfig, ArucoCalibrationStrategy
 
 
-def render_frame(frame):
+def render_frame(frame, frame_placeholder) -> DeltaGenerator:
     # Convert to RGB format for Streamlit and fill the placeholder
     st_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     frame_placeholder.image(st_frame,channels="RGB")
+    return frame_placeholder
 
 
-def calibrate_camera():
+def calibrate_camera(frame_placeholder) -> DeltaGenerator:
 
     calibrator = ArucoCalibrationStrategy(ArucoCalibrationConfig())
     kinect = PyKinectRuntime(PyKinectV2.FrameSourceTypes_Color)
@@ -35,7 +38,9 @@ def calibrate_camera():
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGRA2BGR)
 
                 frame = calibrator.calibrate(frame)
-                render_frame(frame)
+                frame_placeholder = render_frame(frame, frame_placeholder)
+
+    return frame_placeholder
 
 
 def take_background():
@@ -54,11 +59,17 @@ def take_background():
 ################################################################################
 
 banner = st.empty()
+
+# Placeholder for the video frame
+frame_placeholder = st.empty()
+hardware_placeholder = st.empty()
+#stop_button_pressed = st.button("Stop") # button to stop the stream
+
 st.title("Détection automatique des pièces")
 
 if st.button("Calibration de la caméra"):
     with st.spinner("Début de la prise de la photo"):
-        calibrate_camera()
+        frame_placeholder = calibrate_camera(frame_placeholder)
     banner.success("Le fond d'écran a bien été pris")
 
 if st.button("Prise du fond d'écran"):
@@ -74,11 +85,6 @@ algo = st.selectbox(
 
 # Run only once checked
 run = st.checkbox("Démarrer la vidéo")
-
-# Placeholder for the video frame
-frame_placeholder = st.empty()
-hardware_placeholder = st.empty()
-#stop_button_pressed = st.button("Stop") # button to stop the stream
 
 # Initialize Kinect
 kinect = PyKinectRuntime(PyKinectV2.FrameSourceTypes_Color)
@@ -200,7 +206,7 @@ while True and run:
             string_list = detector.average_materials.get_materials()          
 
 
-        render_frame(frame)
+        frame_placeholde = render_frame(frame, frame_placeholder)
 
         # Create a single Markdown string for the list
         markdown_content = "**Liste du matériels détectés:**\n"
