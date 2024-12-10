@@ -227,6 +227,6 @@ def main(capture: Union[KinectCapture, WebcamCapture]):
 
 
 if __name__ == "__main__":
-    # capture: KinectCapture = KinectCapture()
-    capture: WebcamCapture = WebcamCapture(0)
+    capture: KinectCapture = KinectCapture()
+    # capture: WebcamCapture = WebcamCapture(0)
     main(capture)
