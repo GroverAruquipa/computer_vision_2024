@@ -14,41 +14,6 @@ from pykinect2.PyKinectRuntime import PyKinectRuntime
 from calibration import ArucoCalibrationConfig, ArucoCalibrationStrategy
 
 
-banner = st.empty()
-st.title("Détection automatique des pièces")
-
-if st.button("Calibration de la caméra"):
-    with st.spinner("Début de la prise de la photo"):
-        calibrate_camera()
-    banner.success("Le fond d'écran a bien été pris")
-
-if st.button("Prise du fond d'écran"):
-    with st.spinner("Début de la prise de la photo"):
-        take_background()
-    banner.success("Le fond d'écran a bien été pris")
-
-# select an algorithm
-algo = st.selectbox(
-    "Choisir un algorithm",
-    ("Diff+Template", 'Diff+CNN',"Diff+Feature", "Canny+Template", "Canny+Feature", "Canny+CNN"),
-)
-
-# Run only once checked
-run = st.checkbox("Démarrer la vidéo")
-
-# Placeholder for the video frame
-frame_placeholder = st.empty()
-hardware_placeholder = st.empty()
-#stop_button_pressed = st.button("Stop") # button to stop the stream
-
-# Initialize Kinect
-kinect = PyKinectRuntime(PyKinectV2.FrameSourceTypes_Color)
-time.sleep(3)  # Enough time to let the Kinect power on
-
-# Background for background difference methods
-background = cv2.imread("assets/background.jpg")
-
-
 def render_frame(frame):
     # Convert to RGB format for Streamlit and fill the placeholder
     st_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -82,6 +47,45 @@ def take_background():
     background = background.reshape((1080, 1920, 4))
     background = cv2.cvtColor(background, cv2.COLOR_BGRA2BGR)
     cv2.imwrite(os.path.join(path, 'background.jpg'), background)
+
+
+################################################################################
+# Streamlit Setup                                                              #
+################################################################################
+
+banner = st.empty()
+st.title("Détection automatique des pièces")
+
+if st.button("Calibration de la caméra"):
+    with st.spinner("Début de la prise de la photo"):
+        calibrate_camera()
+    banner.success("Le fond d'écran a bien été pris")
+
+if st.button("Prise du fond d'écran"):
+    with st.spinner("Début de la prise de la photo"):
+        take_background()
+    banner.success("Le fond d'écran a bien été pris")
+
+# select an algorithm
+algo = st.selectbox(
+    "Choisir un algorithm",
+    ("Diff+Template", 'Diff+CNN',"Diff+Feature", "Canny+Template", "Canny+Feature", "Canny+CNN"),
+)
+
+# Run only once checked
+run = st.checkbox("Démarrer la vidéo")
+
+# Placeholder for the video frame
+frame_placeholder = st.empty()
+hardware_placeholder = st.empty()
+#stop_button_pressed = st.button("Stop") # button to stop the stream
+
+# Initialize Kinect
+kinect = PyKinectRuntime(PyKinectV2.FrameSourceTypes_Color)
+time.sleep(3)  # Enough time to let the Kinect power on
+
+# Background for background difference methods
+background = cv2.imread("assets/background.jpg")
 
 
 while True and run:
