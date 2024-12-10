@@ -2,37 +2,37 @@ import logging
 import shutil
 from collections.abc import Sequence
 from pathlib import Path
-from typing import NamedTuple
+from typing import Any, NamedTuple
 
 import cv2
 import numpy as np
 from cv2.aruco import CharucoBoard, CharucoDetector, Dictionary
-from cv2.typing import MatLike
 from numpy.typing import NDArray
 
 
 class BoardDetection(NamedTuple):
-    charuco_corners: MatLike
-    charuco_ids: MatLike
-    aruco_corners: Sequence[MatLike]
-    aruco_ids: MatLike
+    charuco_corners: Any
+    charuco_ids: Any
+    aruco_corners: Sequence[Any]
+    aruco_ids: Any
 
 
 class CameraCalibration(NamedTuple):
     rep_error: float
-    camera_matrix: MatLike
-    dist_coeffs: MatLike
-    rvecs: Sequence[MatLike]
-    tvecs: Sequence[MatLike]
+    camera_matrix: Any
+    dist_coeffs: Any
+    rvecs: Sequence[Any]
+    tvecs: Sequence[Any]
     pixel_to_m_ratio: float = 1
 
 
 class PointReferences(NamedTuple):
-    object_points: MatLike
-    image_points: MatLike
+    object_points: Any
+    image_points: Any
 
 
 class ArucoCalibrationConfig:
+    assets_dir_aruco: str = "assets/aruco"
     aruco_dict_type: str = "DICT_4X4_50"
     n_squares_x: int = 5
     n_squares_y: int = 7
@@ -44,7 +44,7 @@ class ArucoCalibrationConfig:
 
 
 class GrayscaleFilter:
-    def process(self, frame: MatLike) -> MatLike | None:
+    def process(self, frame: Any) -> Any:
         return cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
 
@@ -66,7 +66,7 @@ class ArucoCalibrationStrategy:
         except OSError as e:
             self.logger.error(f"Failed to delete aruco dir : {e}")
 
-    def calibrate(self, frame: MatLike) -> MatLike:
+    def calibrate(self, frame: Any) -> Any:
         gray_frame = self.grayscale_filter.process(frame)
 
         detection = BoardDetection(*self.detector.detectBoard(gray_frame))
@@ -126,7 +126,7 @@ class ArucoCalibrationStrategy:
 
             raise ValueError(message) from e
 
-    def _add_detected_points(self, frame: MatLike, points: PointReferences, detection: BoardDetection) -> MatLike:
+    def _add_detected_points(self, frame: Any, points: PointReferences, detection: BoardDetection) -> Any:
         self.calibration_detection.append(detection)
         self.calibration_points.append(points)
 
@@ -165,7 +165,7 @@ class ArucoCalibrationStrategy:
         self.logger.info(f"Pixel to m ratio: {ratio}")
         return float(ratio)
 
-    def _perform_calibration(self, gray_frame: MatLike) -> CameraCalibration:
+    def _perform_calibration(self, gray_frame: Any) -> CameraCalibration:
         calibration = CameraCalibration(
             *cv2.calibrateCamera(
                 [point.object_points for point in self.calibration_points],
