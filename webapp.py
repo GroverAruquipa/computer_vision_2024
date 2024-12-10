@@ -1,117 +1,57 @@
-import os
-import streamlit as st
-import cv2
-import time
+from typing import Any
 
+import cv2
+import streamlit as st
 from streamlit.delta_generator import DeltaGenerator
-import Kinect_detection_BF_CANY_Smooth
-import Kinect_detection_BF_DIFF_SameSize_Smooth
-import Kinect_detection_Matcher_CANY_Smooth
-import Kinect_detection_Matcher_DIFF_SameSize_Smooth
-import Kinect_detection_CNN_DIFF_SameSize_Smooth
-import Kinect_detection_CNN_CANY_SameSize_Smooth
-from pykinect2 import PyKinectV2
-from pykinect2.PyKinectRuntime import PyKinectRuntime
 
 from calibration import ArucoCalibrationConfig, ArucoCalibrationStrategy
+from capture import KinectCapture
+
+capture: KinectCapture = KinectCapture()
 
 
 def render_frame(frame, frame_placeholder) -> DeltaGenerator:
     # Convert to RGB format for Streamlit and fill the placeholder
     st_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    frame_placeholder.image(st_frame,channels="RGB")
+    frame_placeholder.image(st_frame, channels="RGB")
     return frame_placeholder
 
 
-def calibrate_camera(frame_placeholder) -> DeltaGenerator:
-
+def calibrate_camera(capture: KinectCapture, frame_placeholder) -> DeltaGenerator:
     calibrator = ArucoCalibrationStrategy(ArucoCalibrationConfig())
-    kinect = PyKinectRuntime(PyKinectV2.FrameSourceTypes_Color)
-    time.sleep(3)
 
     while True and not calibrator.is_calibration_finished:
-        if kinect.has_new_color_frame():
-            frame = kinect.get_last_color_frame()
+        frame = capture.get_frame()
+        if frame is not None:
+            frame = frame.reshape((1080, 1920, 4))
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGRA2BGR)
 
-            if frame is not None:
-                frame = frame.reshape((1080, 1920, 4))
-                frame = cv2.cvtColor(frame, cv2.COLOR_BGRA2BGR)
-
-                frame = calibrator.calibrate(frame)
-                frame_placeholder = render_frame(frame, frame_placeholder)
+            frame = calibrator.calibrate(frame)
+            frame_placeholder = render_frame(frame, frame_placeholder)
 
     return frame_placeholder
 
-
-def take_background():
-    path = 'assets/'
-    kinect = PyKinectRuntime(PyKinectV2.FrameSourceTypes_Color)
-    time.sleep(3)  # Enough time to let the Kinect power on
-    # Get the background
-    background = kinect.get_last_color_frame()
-    background = background.reshape((1080, 1920, 4))
-    background = cv2.cvtColor(background, cv2.COLOR_BGRA2BGR)
-    cv2.imwrite(os.path.join(path, 'background.jpg'), background)
-
-
-################################################################################
-# Streamlit Setup                                                              #
-################################################################################
-
-banner = st.empty()
-
-# Placeholder for the video frame
-frame_placeholder = st.empty()
-hardware_placeholder = st.empty()
-#stop_button_pressed = st.button("Stop") # button to stop the stream
-
-st.title("Détection automatique des pièces")
-
-if st.button("Calibration de la caméra"):
-    with st.spinner("Début de la prise de la photo"):
-        frame_placeholder = calibrate_camera(frame_placeholder)
-    banner.success("Le fond d'écran a bien été pris")
-
-if st.button("Prise du fond d'écran"):
-    with st.spinner("Début de la prise de la photo"):
-        take_background()
-    banner.success("Le fond d'écran a bien été pris")
-
-# select an algorithm
-algo = st.selectbox(
-    "Choisir un algorithm",
-    ("Diff+Template", 'Diff+CNN',"Diff+Feature", "Canny+Template", "Canny+Feature", "Canny+CNN"),
-)
-
-# Run only once checked
-run = st.checkbox("Démarrer la vidéo")
-
-# Initialize Kinect
-kinect = PyKinectRuntime(PyKinectV2.FrameSourceTypes_Color)
-time.sleep(3)  # Enough time to let the Kinect power on
-
-# Background for background difference methods
-background = cv2.imread("assets/background.jpg")
-
-
-while True and run:
-    if kinect.has_new_color_frame():
-        # Get the color frame
-        frame = kinect.get_last_color_frame()
+def detection_loop(frame: Any, algo: str, hardware_placeholder: DeltaGenerator) -> DeltaGenerator:
+    import Kinect_detection_BF_CANY_Smooth
+    import Kinect_detection_BF_DIFF_SameSize_Smooth
+    import Kinect_detection_CNN_CANY_SameSize_Smooth
+    import Kinect_detection_CNN_DIFF_SameSize_Smooth
+    import Kinect_detection_Matcher_CANY_Smooth
+    import Kinect_detection_Matcher_DIFF_SameSize_Smooth
 
     string_list = []
 
     if frame is not None:
-        frame = frame.reshape((1080, 1920, 4)) # reshape
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGRA2BGR) # convert to openCV format
+        frame = frame.reshape((1080, 1920, 4))  # reshape
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGRA2BGR)  # convert to openCV format
 
-        if algo=="Diff+Template":
+        if algo == "Diff+Template":
             # get background
             # background = cv2.imread("background.jpg")
 
             # Initialize ObjectDetector
             detector = Kinect_detection_Matcher_DIFF_SameSize_Smooth.ObjectDetector()
-            detector.calibration() # Perform calibration
+            detector.calibration()  # Perform calibration
 
             # remove background
             diff_frame = cv2.absdiff(background, frame)
@@ -120,14 +60,13 @@ while True and run:
             processed_frame = detector.process_frame(diff_frame, frame)
             string_list = detector.average_materials.get_materials()
 
-        
-        if algo=="Diff+CNN":
+        if algo == "Diff+CNN":
             # get background
             # background = cv2.imread("background.jpg")
 
             # Initialize ObjectDetector
             detector = Kinect_detection_CNN_DIFF_SameSize_Smooth.ObjectDetector()
-            detector.calibration() # Perform calibration
+            detector.calibration()  # Perform calibration
 
             # remove background
             diff_frame = cv2.absdiff(background, frame)
@@ -137,13 +76,13 @@ while True and run:
             string_list = detector.average_materials.get_materials()
 
         # Feature matching with background contour
-        elif algo=='Diff+Feature':
+        elif algo == "Diff+Feature":
             # get background
             # background = cv2.imread("background.jpg")
 
             # Initialize ObjectDetector
             detector = Kinect_detection_BF_DIFF_SameSize_Smooth.ObjectDetector()
-            detector.calibration() # Perform calibration
+            detector.calibration()  # Perform calibration
 
             # remove background
             diff_frame = cv2.absdiff(background, frame)
@@ -153,7 +92,7 @@ while True and run:
             string_list = detector.average_materials.get_materials()
 
         # Template matching with Canny contour
-        elif algo=='Canny+Template':
+        elif algo == "Canny+Template":
             # get background
             # background = kinect.get_last_color_frame()
             # background = background.reshape((1080, 1920, 4))
@@ -161,7 +100,7 @@ while True and run:
 
             # Initialize ObjectDetector
             detector = Kinect_detection_Matcher_CANY_Smooth.ObjectDetector()
-            detector.calibration() # Perform calibration
+            detector.calibration()  # Perform calibration
 
             # remove background
             # diff_frame = cv2.absdiff(background, frame)
@@ -171,7 +110,7 @@ while True and run:
             string_list = detector.average_materials.get_materials()
 
         # Feature matching with Canny contour
-        elif algo=='Canny+Feature':
+        elif algo == "Canny+Feature":
             # get background
             # background = kinect.get_last_color_frame()
             # background = background.reshape((1080, 1920, 4))
@@ -179,7 +118,7 @@ while True and run:
 
             # Initialize ObjectDetector
             detector = Kinect_detection_BF_CANY_Smooth.ObjectDetector()
-            detector.calibration() # Perform calibration
+            detector.calibration()  # Perform calibration
 
             # remove background
             # diff_frame = cv2.absdiff(background, frame)
@@ -188,7 +127,7 @@ while True and run:
             processed_frame = detector.process_frame(frame)
             string_list = detector.average_materials.get_materials()
 
-        elif algo=='Canny+CNN':
+        elif algo == "Canny+CNN":
             # get background
             # background = kinect.get_last_color_frame()
             # background = background.reshape((1080, 1920, 4))
@@ -196,15 +135,14 @@ while True and run:
 
             # Initialize ObjectDetector
             detector = Kinect_detection_CNN_CANY_SameSize_Smooth.ObjectDetector()
-            detector.calibration() # Perform calibration
+            detector.calibration()  # Perform calibration
 
             # remove background
             # diff_frame = cv2.absdiff(background, frame)
 
             # Process the frame to detect objects
-            processed_frame = detector.process_frame(frame)  
-            string_list = detector.average_materials.get_materials()          
-
+            processed_frame = detector.process_frame(frame)
+            string_list = detector.average_materials.get_materials()
 
         frame_placeholde = render_frame(frame, frame_placeholder)
 
@@ -216,6 +154,68 @@ while True and run:
         # Update the placeholder with the full Markdown content
         hardware_placeholder.markdown(markdown_content)
 
-    # If press «esc» or hit stop button, end stream
-    if cv2.waitKey(1) == 27:
-        break
+    return hardware_placeholder
+
+################################################################################
+# Streamlit Setup                                                              #
+################################################################################
+
+class ApplicationSteps(Enum):
+    CALIBRATION = 1
+    DETECTION = 2
+    BACKGROUND = 3
+    WAIT = 4
+
+
+def main():
+    application_step = ApplicationSteps.WAIT
+    banner = st.empty()
+
+    # Placeholder for the video frame
+    frame_placeholder = st.empty()
+    hardware_placeholder = st.empty()
+    # stop_button_pressed = st.button("Stop") # button to stop the stream
+
+    st.title("Détection automatique des pièces")
+
+    if st.button("Calibration de la caméra"):
+        application_step = ApplicationSteps.CALIBRATION
+
+    if st.button("Prise du fond d'écran"):
+        application_step = ApplicationSteps.BACKGROUND
+
+    # select an algorithm
+    algo = st.selectbox(
+        "Choisir un algorithm",
+        ("Diff+Template", "Diff+CNN", "Diff+Feature", "Canny+Template", "Canny+Feature", "Canny+CNN"),
+    )
+
+    # Run only once checked
+    run = st.checkbox("Démarrer la detection")
+
+    while True and application_step != ApplicationSteps.WAIT:
+        frame = capture.get_frame()
+        background = capture.background
+
+        if run:
+            application_step = ApplicationSteps.DETECTION
+
+        if application_step == ApplicationSteps.DETECTION:
+            hardware_placeholder = detection_loop(frame, algo, hardware_placeholder)
+
+        if application_step == ApplicationSteps.CALIBRATION:
+            with st.spinner("Début de la prise de la photo"):
+                frame_placeholder = calibrate_camera(capture, frame_placeholder)
+            banner.success("Le fond d'écran a bien été pris")
+
+        if application_step == ApplicationSteps.BACKGROUND:
+            with st.spinner("Début de la prise de la photo"):
+                capture.take_background()
+            banner.success("Le fond d'écran a bien été pris")
+
+        # If press «esc» or hit stop button, end stream
+        if cv2.waitKey(1) == 27:
+            break
+
+if __name__ == "__main__":
+    main()
