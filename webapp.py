@@ -1,13 +1,12 @@
-from typing import Any
+from enum import Enum
+from typing import Any, Union
 
 import cv2
 import streamlit as st
 from streamlit.delta_generator import DeltaGenerator
 
 from calibration import ArucoCalibrationConfig, ArucoCalibrationStrategy
-from capture import KinectCapture
-
-capture: KinectCapture = KinectCapture()
+from capture import KinectCapture, WebcamCapture
 
 
 def render_frame(frame, frame_placeholder) -> DeltaGenerator:
@@ -30,6 +29,7 @@ def calibrate_camera(capture: KinectCapture, frame_placeholder) -> DeltaGenerato
             frame_placeholder = render_frame(frame, frame_placeholder)
 
     return frame_placeholder
+
 
 def detection_loop(frame: Any, algo: str, hardware_placeholder: DeltaGenerator) -> DeltaGenerator:
     import Kinect_detection_BF_CANY_Smooth
@@ -156,9 +156,11 @@ def detection_loop(frame: Any, algo: str, hardware_placeholder: DeltaGenerator) 
 
     return hardware_placeholder
 
+
 ################################################################################
 # Streamlit Setup                                                              #
 ################################################################################
+
 
 class ApplicationSteps(Enum):
     CALIBRATION = 1
@@ -167,7 +169,7 @@ class ApplicationSteps(Enum):
     WAIT = 4
 
 
-def main():
+def main(capture: Union[KinectCapture, WebcamCapture]):
     application_step = ApplicationSteps.WAIT
     banner = st.empty()
 
@@ -217,5 +219,8 @@ def main():
         if cv2.waitKey(1) == 27:
             break
 
+
 if __name__ == "__main__":
-    main()
+    # capture: KinectCapture = KinectCapture()
+    capture: WebcamCapture = WebcamCapture(0)
+    main(capture)
